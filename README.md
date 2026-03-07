@@ -5,4 +5,5 @@
 **Feladat részletesebben**: 
 - Bemeneti változók: környezet leírása (pl. hány laptop van, milyen közel vannak egymáshoz stb.) 
 - Kimeneti változó: összegző terhelési mutató (0-1-ig; az 1 feletti érték már a biztonságos határérték felett van) és egy közvetlen terhelési érték (Volt per méter (V/m) vagy Watt per négyzetméter (W/m^2)) 
-- Amennyiben indokolt, a programkód kibővíthető egy tanuló modellé. 
+
+Amennyiben indokolt, a programkód kibővíthető egy tanuló modellé. 
