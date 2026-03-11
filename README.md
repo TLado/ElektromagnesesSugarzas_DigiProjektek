@@ -8,7 +8,7 @@
 - Amennyiben indokolt, a programkód kibővíthető egy tanuló modellé. 
 
 **Pár fontos infó (még csak a mágneses térről, mivel azt az excelt kaptuk csak meg)**
-- Hz = Frekvencia, azt adja meg, milyen gyorsan rezeg a tér (milyen ütemben változik az iránya)
+- Hz = Frekvencia, azt adja meg, milyen gyorsan rezeg a tér (milyen ütemben változik az iránya); ez minden elektromos eszköznél 50hz Európában, így ez állandó marad (Amerikában 60Hz)
 - muT = Azt adja meg, milyen erős a mágneses tér, milyen a fluxussűrűsége (a mu egy görög betű, csak ebben a karakterkódolásban nincs benne)
 - Lakossági Maximum = lakossági helyeken ekkora fluxussűrűség fogadható el (azért alacsonyabb, mint a foglalkozási maximum, mivel itt akár a nap 24 órájában is tartózkodhatnak)
 - Foglalkozási Maximum = munkahelyen a maximális fluxussűrűség (ebben van az alacsony AL és a magas AL)
