@@ -1,24 +1,90 @@
-devices_and_values = {"laptop": 10, "monitor": 9, "printer": 3, "router": 5, "other": 4} # teljesen véletlenszerű értékek és eszközök dummyknak
-DISTANCE_WHEN_MEASURED = 0.1 # ilyen messziről mértük meg az eszközt (méter), amiből az alapvető térerősségértéket kaptuk
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+
+# Konstansok
+devices_and_values = {"laptop": 10, "monitor": 9, "printer": 3, "router": 5, "other": 4}
+DISTANCE_WHEN_MEASURED = 0.1  # méter, amikor az alapvető értékeket mértük meg az eszközöknél ennyi méterre voltunk
+ROOM_SIZE = 20                # méter, jelen esetben egy ROOM_SIZE X ROOM_SIZE méretű négyzetszobáról beszélünk
+RES = 0.1                     # felbontás (10 cm), ez a heatmap felbontása
 
 def data_input():
-    device = input(f"Milyen eszközöd van? Az alábbiak közül válassz: {devices_and_values.keys()}: ")
-    if device not in devices_and_values.keys():
-        print("Érvénytelen eszköz!")
-        return data_input()
-    num_devices = int(input(f"Hány darab {device} van?: "))
-    distance = float(input(f"Milyen távolságra vagy a {device}től (méterben; ha nem egész, akkor \".\"-zel add meg a tizedes jegyet)?: "))
-    #power = float(input(f"Milyen teljesítményű a {device}?"))
-    #frequency = float(input(f"Milyen frekvenciájú a {device}?"))
-    # muT = float(input(f"Milyen mágneses térerősségű a {device} (muT-ben)?: "))
-    return device, num_devices, distance
+    # Felhasználótól az eszköz és a koordinátáinak a bekérése
+    dev_types = []
+    dxs = []
+    dys = []
+    
+    while True:
+        d = input(f"Milyen eszközöd van? ({list(devices_and_values.keys())}): ").lower()
+        if d not in devices_and_values:
+            print("Érvénytelen eszköz! Próbáld újra.")
+            continue
+            
+        try:
+            x = float(input(f"X koordináta (0-{ROOM_SIZE}): "))
+            y = float(input(f"Y koordináta (0-{ROOM_SIZE}): "))
+            if not (0 <= x <= ROOM_SIZE and 0 <= y <= ROOM_SIZE):
+                print(f"A koordinátáknak 0 és {ROOM_SIZE} közé kell esniük!")
+                continue
+        except ValueError:
+            print("Kérlek számot adj meg!")
+            continue
 
-def tererosseg_szamitas(device, num_devices, distance):
-    tererosseg_mutato = devices_and_values[device] * num_devices * (DISTANCE_WHEN_MEASURED / distance)**3
-    return tererosseg_mutato
+        dev_types.append(d)
+        dxs.append(x)
+        dys.append(y)
+        
+        if input("Szeretnél még egy eszközt felvenni? (y/n): ").lower() != 'y':
+            break
+            
+    return dev_types, dxs, dys
+
+def calculate_combined_heatmap(dev_types, dxs, dys):
+    # Rács létrehozása
+    x = np.arange(0, ROOM_SIZE + RES, RES)
+    y = np.arange(0, ROOM_SIZE + RES, RES)
+    X, Y = np.meshgrid(x, y)
+    
+    # Kezdeti térerősség mindenhol nulla
+    Z_total = np.zeros_like(X)
+
+    # Minden eszköz térerősségének hozzáadása
+    for i in range(len(dev_types)):
+        dist = np.sqrt((X - dxs[i])**2 + (Y - dys[i])**2) # Pitagorasz tétel
+        dist = np.maximum(dist, 0.05)  # Nullával osztás elkerülése
+        
+        B_ref = devices_and_values[dev_types[i]]
+        # Inverz köbös törvény (pontszerű forrás)
+        Z_total += B_ref * (DISTANCE_WHEN_MEASURED / dist)**3
+
+    return X, Y, Z_total
 
 if __name__ == "__main__":
-    device, num_devices, distance = data_input()
-    print(f"A {device} távolsága: {distance} m, a mágneses térerősség közvetlen közelről: {devices_and_values[device]} muT")
-    print(f"A tererosseg_mutato: {tererosseg_szamitas(device, num_devices, distance)}")
+    # 1. Adatok bekérése
+    dev_types, dxs, dys = data_input()
 
+    # 2. Számítás
+    X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys)
+
+    # 3. Megjelenítés
+    plt.figure(figsize=(10, 8))
+    
+    # Logaritmikus skála a jobb láthatóságért
+    # vmin-t érdemes alacsonyra venni, hogy a távoli gyenge mezők is látszódjanak
+    norm = LogNorm(vmin=0.0001, vmax=max(Z.max(), 10))
+    
+    cp = plt.pcolormesh(X, Y, Z, shading='auto', cmap='magma', norm=norm)
+    
+    # Színskála és feliratok (r'' a SyntaxWarning elkerüléséhez)
+    plt.colorbar(cp, label=r'Mágneses térerősség ($\mu T$)')
+    
+    # Eszközök bejelölése a térképen
+    for i in range(len(dev_types)):
+        plt.scatter(dxs[i], dys[i], color='white', marker='x', s=100)
+        plt.text(dxs[i]+0.2, dys[i]+0.2, dev_types[i], color='white', fontsize=9)
+
+    plt.title('Kombinált mágneses hőtérkép a szobában')
+    plt.xlabel('X távolság (m)')
+    plt.ylabel('Y távolság (m)')
+    plt.grid(True, linestyle='--', alpha=0.3)
+    plt.show()
