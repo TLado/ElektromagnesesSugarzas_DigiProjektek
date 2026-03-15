@@ -5,7 +5,8 @@ from matplotlib.colors import LogNorm
 # Konstansok
 devices_and_values = {"laptop": 10, "monitor": 9, "printer": 3, "router": 5, "other": 4}
 DISTANCE_WHEN_MEASURED = 0.1  # méter, amikor az alapvető értékeket mértük meg az eszközöknél ennyi méterre voltunk
-ROOM_SIZE = 20                # méter, jelen esetben egy ROOM_SIZE X ROOM_SIZE méretű négyzetszobáról beszélünk
+ROOM_SIZE_X = 20               # méterben
+ROOM_SIZE_Y = 30
 RES = 0.1                     # felbontás (10 cm), ez a heatmap felbontása
 
 def data_input():
@@ -21,10 +22,10 @@ def data_input():
             continue
             
         try:
-            x = float(input(f"X koordináta (0-{ROOM_SIZE}): "))
-            y = float(input(f"Y koordináta (0-{ROOM_SIZE}): "))
-            if not (0 <= x <= ROOM_SIZE and 0 <= y <= ROOM_SIZE):
-                print(f"A koordinátáknak 0 és {ROOM_SIZE} közé kell esniük!")
+            x = float(input(f"X koordináta (0-{ROOM_SIZE_X}): "))
+            y = float(input(f"Y koordináta (0-{ROOM_SIZE_Y}): "))
+            if not (0 <= x <= ROOM_SIZE_X and 0 <= y <= ROOM_SIZE_Y):
+                print(f"A koordináta a szoba határait nem haladhatja meg!")
                 continue
         except ValueError:
             print("Kérlek számot adj meg!")
@@ -41,8 +42,8 @@ def data_input():
 
 def calculate_combined_heatmap(dev_types, dxs, dys):
     # Rács létrehozása
-    x = np.arange(0, ROOM_SIZE + RES, RES)
-    y = np.arange(0, ROOM_SIZE + RES, RES)
+    x = np.arange(0, ROOM_SIZE_X + RES, RES)
+    y = np.arange(0, ROOM_SIZE_Y + RES, RES)
     X, Y = np.meshgrid(x, y)
     
     # Kezdeti térerősség mindenhol nulla
