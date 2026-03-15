@@ -60,6 +60,21 @@ def calculate_combined_heatmap(dev_types, dxs, dys):
 
     return X, Y, Z_total
 
+def format_coord(x, y):
+    # Koordináta indexek mellé a mágneses térerősséget is kiírjuk a jobb felső sarokba
+
+    # Kiszámoljuk a mátrix indexeit a koordinátákból
+    col = int(round(x / RES))
+    row = int(round(y / RES))
+    
+    # Ellenőrizzük, hogy a szobán belül van-e az egér
+    if 0 <= col < Z.shape[1] and 0 <= row < Z.shape[0]:
+        z = Z[row, col]
+        return f'x={x:.2f}, y={y:.2f}, B={z:.4f} \u03bcT'
+    return f'x={x:.2f}, y={y:.2f}'
+
+
+
 if __name__ == "__main__":
     # 1. Adatok bekérése
     dev_types, dxs, dys = data_input()
@@ -88,4 +103,7 @@ if __name__ == "__main__":
     plt.xlabel('X távolság (m)')
     plt.ylabel('Y távolság (m)')
     plt.grid(True, linestyle='--', alpha=0.3)
+
+    plt.gca().format_coord = format_coord 
+    
     plt.show()
