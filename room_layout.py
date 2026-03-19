@@ -284,6 +284,9 @@ class NotebookRoomDesigner:
                         export_x = x * subdiv + sub_x
                         export_y = y * subdiv + sub_y
 
+                        # A tárgyakat csak a bal felső alkockába tesszük bele
+                        current_items = cell["items"] if (sub_x == 0 and sub_y == 0) else []
+
                         rows.append({
                             "x": export_x,
                             "y": export_y,
@@ -291,12 +294,12 @@ class NotebookRoomDesigner:
                             "y_m": export_y * EXPORT_CELL_SIZE_M,
                             "cell_size_m": EXPORT_CELL_SIZE_M,
                             "is_wall": int(cell["wall"]),
-                            "items": ",".join(cell["items"]) if cell["items"] else "",
-                            "table": int("table" in cell["items"]),
-                            "computer": int("computer" in cell["items"]),
-                            "monitor": int("monitor" in cell["items"]),
-                            "phone": int("phone" in cell["items"]),
-                            "person": int("person" in cell["items"])
+                            "items": ",".join(current_items) if current_items else "",
+                            "table": int("table" in current_items),
+                            "computer": int("computer" in current_items),
+                            "monitor": int("monitor" in current_items),
+                            "phone": int("phone" in current_items),
+                            "person": int("person" in current_items)
                         })
 
         return pd.DataFrame(rows)
