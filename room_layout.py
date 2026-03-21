@@ -7,26 +7,27 @@ import matplotlib.patches as patches
 from matplotlib.widgets import Button, TextBox, RadioButtons
 import pandas as pd
 import numpy as np
+import random
+
 EXPORT_CELL_SIZE_M = 0.25
 
-ITEM_COLORS = {
-    "wall": "#4a4a4a",
-    "table": "#d9b38c",
-    "computer": "#9fc5e8",
-    "monitor": "#b6d7a8",
-    "phone": "#f9cb9c",
-    "person": "#d5a6bd"
-}
+# CSV beolvasása
+try:
+    df_tools = pd.read_csv('cleaned_magnetic_data.csv', sep=',')
+    csv_tools = df_tools['eszkoz_neve'].dropna().unique().tolist()
+except FileNotFoundError:
+    print("Nem található a cleaned_magnetic_data.csv fájl.")
+    csv_tools = []
 
-ITEM_LABELS = {
-    "table": "T",
-    "computer": "PC",
-    "monitor": "M",
-    "phone": "P",
-    "person": "U"
-}
+ITEM_COLORS = {"wall": "#4a4a4a"}
+ITEM_LABELS = {}
+TOOLS = ["wall"] + csv_tools + ["erase"]
 
-TOOLS = ["wall", "table", "computer", "monitor", "phone", "person", "erase"]
+# Dinamikus színek és rövidítések generálása az eszközökhöz
+random.seed(42)
+for tool in csv_tools:
+    ITEM_COLORS[tool] = f"#{random.randint(0, 0xFFFFFF):06x}"
+    ITEM_LABELS[tool] = tool[:2].upper()
 
 
 class NotebookRoomDesigner:
@@ -52,7 +53,23 @@ class NotebookRoomDesigner:
         self.ax_cellsize = self.fig.add_axes([0.73, 0.82, 0.19, 0.05])
         self.ax_generate = self.fig.add_axes([0.73, 0.73, 0.19, 0.06])
 
-        self.ax_tools = self.fig.add_axes([0.73, 0.37, 0.19, 0.30])
+        self.all_tools = TOOLS
+        self.tool_page = 0
+        self.tools_per_page = 12
+        self.current_tool = self.all_tools[0]
+
+        self.ax_tools = self.fig.add_axes([0.73, 0.35, 0.19, 0.32])
+        self.ax_prev = self.fig.add_axes([0.73, 0.28, 0.09, 0.05])
+        self.ax_next = self.fig.add_axes([0.83, 0.28, 0.09, 0.05])
+
+        self.btn_prev = Button(self.ax_prev, "< Előző")
+        self.btn_next = Button(self.ax_next, "Köv. >")
+
+        self.btn_prev.on_clicked(self.prev_page)
+        self.btn_next.on_clicked(self.next_page)
+
+        # Rádiógombok inicializálása hívással:
+        self._update_tool_radio()
 
         self.ax_filename = self.fig.add_axes([0.73, 0.22, 0.19, 0.05])
         self.ax_export = self.fig.add_axes([0.73, 0.14, 0.19, 0.06])
@@ -62,17 +79,37 @@ class NotebookRoomDesigner:
         self.cellsize_box = TextBox(self.ax_cellsize, "Grid size m", initial=str(self.cell_size_m))
 
         self.generate_button = Button(self.ax_generate, "Generate Room")
-        self.tools_radio = RadioButtons(self.ax_tools, TOOLS, active=1)
         self.filename_box = TextBox(self.ax_filename, "CSV file", initial="room_layout.csv")
         self.export_button = Button(self.ax_export, "Export CSV")
 
         self.generate_button.on_clicked(self.generate_room)
-        self.tools_radio.on_clicked(self.set_tool)
         self.export_button.on_clicked(self.export_csv)
         self.fig.canvas.mpl_connect("button_press_event", self.on_click)
 
         self._create_room(self.inner_width_cells, self.inner_height_cells)
         self.draw()
+
+    def _update_tool_radio(self):
+        self.ax_tools.clear()
+        start = self.tool_page * self.tools_per_page
+        end = start + self.tools_per_page
+        page_tools = self.all_tools[start:end]
+        
+        active_idx = page_tools.index(self.current_tool) if self.current_tool in page_tools else 0
+            
+        self.tools_radio = RadioButtons(self.ax_tools, page_tools, active=active_idx)
+        self.tools_radio.on_clicked(self.set_tool)
+        self.fig.canvas.draw_idle()
+
+    def prev_page(self, event):
+        if self.tool_page > 0:
+            self.tool_page -= 1
+            self._update_tool_radio()
+
+    def next_page(self, event):
+        if (self.tool_page + 1) * self.tools_per_page < len(self.all_tools):
+            self.tool_page += 1
+            self._update_tool_radio()
 
     def _meters_to_cells(self, meters, cell_size):
         return max(1, int(round(meters / cell_size)))
@@ -284,23 +321,23 @@ class NotebookRoomDesigner:
                         export_x = x * subdiv + sub_x
                         export_y = y * subdiv + sub_y
 
-                        # A tárgyakat csak a bal felső alkockába tesszük bele
                         current_items = cell["items"] if (sub_x == 0 and sub_y == 0) else []
 
-                        rows.append({
+                        row_data = {
                             "x": export_x,
                             "y": export_y,
                             "x_m": export_x * EXPORT_CELL_SIZE_M,
                             "y_m": export_y * EXPORT_CELL_SIZE_M,
                             "cell_size_m": EXPORT_CELL_SIZE_M,
                             "is_wall": int(cell["wall"]),
-                            "items": ",".join(current_items) if current_items else "",
-                            "table": int("table" in current_items),
-                            "computer": int("computer" in current_items),
-                            "monitor": int("monitor" in current_items),
-                            "phone": int("phone" in current_items),
-                            "person": int("person" in current_items)
-                        })
+                            "items": ",".join(current_items) if current_items else ""
+                        }
+                        
+                        # Dinamikus oszlopok létrehozása az eszközökhöz
+                        for t in csv_tools:
+                            row_data[t] = int(t in current_items)
+
+                        rows.append(row_data)
 
         return pd.DataFrame(rows)
 

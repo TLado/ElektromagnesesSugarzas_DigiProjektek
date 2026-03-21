@@ -3,9 +3,16 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import pandas as pd
 
+# CSV beolvasása
+df = pd.read_csv('cleaned_magnetic_data.csv')
+
 # Konstansok
-devices_and_values = {"computer": 9, "monitor": 3, "phone": 5}
-DISTANCE_WHEN_MEASURED = 0.1  # méter, amikor az alapvető értékeket mértük meg az eszközöknél ennyi méterre voltunk
+
+# Dictionary létrehozása: { 'eszköz neve': [sugárzás, távolság] }
+devices_and_values = {
+    row['eszkoz_neve']: [row['magneses_sugarzas_mikrotesla'], row['meresi_tavolsag_meterben']] 
+    for _, row in df.iterrows()
+}
 RES = 0.1                     # felbontás (10 cm), ez a heatmap felbontása
 MAGYAR_LAKOSSAGI_MAXIMUM = 100 # lakossági helyeken ekkora fluxussűrűség fogadható el (azért alacsonyabb, mint a foglalkozási maximum, mivel itt akár a nap 24 órájában is tartózkodhatnak)
 MAGYAR_ALACSONY_AL = 1000 # ekkora fluxussűrűség felett már intézkedni kell a munkavállaló védelmére, de még szabad benne dolgozni (AL egyébként Action Level)
@@ -26,9 +33,9 @@ def calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m):
         dist = np.sqrt((X - dxs[i])**2 + (Y - dys[i])**2) # Pitagorasz tétel
         dist = np.maximum(dist, 0.05)  # Nullával osztás elkerülése
         
-        B_ref = devices_and_values[dev_types[i]]
+        B_ref = devices_and_values[dev_types[i]][0]
         # Inverz köbös törvény (pontszerű forrás)
-        Z_total += B_ref * (DISTANCE_WHEN_MEASURED / dist)**3
+        Z_total += B_ref * (devices_and_values[dev_types[i]][1] / dist)**3
 
     return X, Y, Z_total
 
@@ -46,58 +53,29 @@ def format_coord(x, y):
     return f'x={x:.2f}, y={y:.2f}'
 
 def import_csv(): 
+    # CSV beolvasása (figyelj a szeparátorra!)
     room_layout = pd.read_csv("room_layout.csv", sep=";")
-
-    """
-    CSV oszlopainak jelentése: 
-    x           : A cella oszlopindexe a rácsban (egész szám).
-    y           : A cella sorindexe a rácsban (egész szám).
-    x_m         : A cella vízszintes középpontja méterben kifejezve.
-    y_m         : A cella függőleges középpontja méterben kifejezve.
-    cell_size_m : Egy cella oldalhossza méterben (felbontás).
-    is_wall     : Bináris (0/1); 1-es, ha a cella egy fal része.
-    items       : Ez bevallom nem tudom mi (Alexet kéne kérdezni)
-    table       : Bináris (0/1); 1-es, ha asztal található a cellában.
-    computer    : Bináris (0/1); 1-es, ha számítógép található a cellában.
-    monitor     : Bináris (0/1); 1-es, ha monitor található a cellában.
-    phone       : Bináris (0/1); 1-es, ha telefon található a cellában.
-    person      : Bináris (0/1); 1-es, ha személy tartózkodik a cellában.
-
-    """
 
     dev_types = []
     dxs = []
     dys = []
 
-    computers = room_layout[room_layout["computer"] == 1]
-    monitors = room_layout[room_layout["monitor"] == 1]
-    phones = room_layout[room_layout["phone"] == 1]
+    # Azokat az oszlopokat keressük, amik szerepelnek a mágneses adatbázisban is
+    available_devices = [col for col in room_layout.columns if col in devices_and_values]
 
+    for dev in available_devices:
+        # Kiválasztjuk azokat a sorokat, ahol az adott eszköz jelen van (1-es érték)
+        active_items = room_layout[room_layout[dev] == 1]
+        for item in active_items.itertuples():
+            dev_types.append(dev)
+            dxs.append(item.x_m)
+            dys.append(item.y_m)
 
-    for item in computers.itertuples():
-        dev_types.append("computer")
-        dxs.append(item.x_m)
-        dys.append(item.y_m)
-
-    for item in monitors.itertuples():
-        dev_types.append("monitor")
-        dxs.append(item.x_m)
-        dys.append(item.y_m)
-
-    for item in phones.itertuples():
-        dev_types.append("phone")
-        dxs.append(item.x_m)
-        dys.append(item.y_m)
-
-    # A legnagyobb koordináták megkeresése
-    max_x_m = room_layout['x_m'].max()
-    max_y_m = room_layout['y_m'].max()
+    # Paraméterek kinyerése
     cell_size_m = room_layout['cell_size_m'].iloc[0]
-
-    # A szoba szélessége és hossza méterben (még falak nélkül, ezért vonok ki egyet-egyet)
-    width_m = max_x_m + cell_size_m - 1
-    height_m = max_y_m + cell_size_m - 1
-
+    
+    width_m = room_layout['x_m'].max() + cell_size_m - 1
+    height_m = room_layout['y_m'].max() + cell_size_m - 1
 
     return dev_types, dxs, dys, width_m, height_m, cell_size_m
 

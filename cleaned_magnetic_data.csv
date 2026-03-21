@@ -1,4 +1,4 @@
-﻿eszköz neve,tipikus érték mikroteslában,mérési távolság méterben
+﻿eszkoz_neve,magneses_sugarzas_mikrotesla,meresi_tavolsag_meterben
 Aszinkron motor (50 Hz),50,0.5
 Nagyteljesítményű motor (~ 200 kW),200,0.1
 Elosztó transzformátor,100,1
