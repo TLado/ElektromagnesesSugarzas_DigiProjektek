@@ -6,42 +6,11 @@ import pandas as pd
 # Konstansok
 devices_and_values = {"computer": 9, "monitor": 3, "phone": 5}
 DISTANCE_WHEN_MEASURED = 0.1  # méter, amikor az alapvető értékeket mértük meg az eszközöknél ennyi méterre voltunk
-# ROOM_SIZE_X = 20               # méterben
-# ROOM_SIZE_Y = 30
 RES = 0.1                     # felbontás (10 cm), ez a heatmap felbontása
+MAGYAR_LAKOSSAGI_MAXIMUM = 100 # lakossági helyeken ekkora fluxussűrűség fogadható el (azért alacsonyabb, mint a foglalkozási maximum, mivel itt akár a nap 24 órájában is tartózkodhatnak)
+MAGYAR_ALACSONY_AL = 1000 # ekkora fluxussűrűség felett már intézkedni kell a munkavállaló védelmére, de még szabad benne dolgozni (AL egyébként Action Level)
+MAGYAR_MAGAS_AL = 6000 # ez a maximális határ, amit még óvintézkedés esetén is engedélyezni lehet emberi munkára
 
-"""
-def data_input():
-    # Felhasználótól az eszköz és a koordinátáinak a bekérése
-    dev_types = []
-    dxs = []
-    dys = []
-    
-    while True:
-        d = input(f"Milyen eszközöd van? ({list(devices_and_values.keys())}): ").lower()
-        if d not in devices_and_values:
-            print("Érvénytelen eszköz! Próbáld újra.")
-            continue
-            
-        try:
-            x = float(input(f"X koordináta (0-{ROOM_SIZE_X}): "))
-            y = float(input(f"Y koordináta (0-{ROOM_SIZE_Y}): "))
-            if not (0 <= x <= ROOM_SIZE_X and 0 <= y <= ROOM_SIZE_Y):
-                print(f"A koordináta a szoba határait nem haladhatja meg!")
-                continue
-        except ValueError:
-            print("Kérlek számot adj meg!")
-            continue
-
-        dev_types.append(d)
-        dxs.append(x)
-        dys.append(y)
-        
-        if input("Szeretnél még egy eszközt felvenni? (y/n): ").lower() != 'y':
-            break
-            
-    return dev_types, dxs, dys
-"""
 
 def calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m):
     # Rács létrehozása
