@@ -1,0 +1,47 @@
+﻿eszköz neve,tipikus érték mikroteslában,mérési távolság méterben
+Aszinkron motor (50 Hz),50,0.5
+Nagyteljesítményű motor (~ 200 kW),200,0.1
+Elosztó transzformátor,100,1
+Nagy teljesítményű transzformátor (beltéri),500,0.5
+Kis elosztó transzformátor (oszlopon),10,5
+CT scanner (forgó gantry közel),0.5,1
+EKG monitor (elektródák közel),0.1,0.5
+Infúziós pumpa (elektronikus),0.5,0.5
+Számítógép monitor / LCD kijelző,1,0.5
+Fluoreszkáló / LED lámpa (mennyezeti),0.5,2
+Nyomtató / multifunkciós gép (működés közben),5,1
+Irodai konnektor / hosszabbító kábel,2,0.5
+Irodai átlag (asztal közelében),0.6,1
+Elektromos vezeték a falban / mennyezetben,1,1
+Turbina-generátor (nagy teljesítményű),500,2
+Nagyfeszültségű transzformátor,200,1
+Hűtőszivattyú motor (nagyteljesítményű),100,0.5
+Vezérlőrúd hajtómotor,50,1
+Nagyáramú kábelezés (DC/AC),1000,0.5
+Generátor terem átlag,20,5
+Ívhegesztő gép (AC),200,0.5
+Hegesztő transzformátor,100,0.5
+Hegesztő kábel (nagyáramú),300,0.5
+Hegesztő munkaasztal átlag,10,1
+Földelő kábel / clamp,50,0.3
+Nagy teljesítményű motor (szivattyú),100,0.5
+Elektromos ívkemence,500,1
+Formázó gép (hidraulikus/elektromos),50,0.5
+Öntődarab hűtőszalag motor,50,1
+Transzformátor (öntödei),200,0.5
+Nagyáramú kábelezés,300,0.3
+Öntödei átlag (munkaállomás),20,2
+Robotkar (elektromos hajtás),50,1
+Nagy teljesítményű motor (szalag),100,0.5
+Összeszerelő állomás transzformátor,20,0.5
+Elektromos szerszám (csavarhúzó),10,0.3
+Nagyáramú kábelezés (gyártósor),50,0.5
+Átlagos gyártósor (munkaállomás),10,1
+Felsővezeték közelében (oszlopon),200,0.5
+Oszloptranszformátor (22 kV),150,0.5
+Nagyáramú kábel / busbar (oszlop közel),300,0.5
+Élő vezeték javítás (FAM oszlopon),100,0.3
+Oszlop melletti földkábel csatlakozás,100,0.3
+Mérőberendezés / panel (oszlop mellett),20,1
+Átlagos FAM munkaterület (oszlopon),50,1
+Földelő / clamp rögzítése (oszlop közel),50,0.3
