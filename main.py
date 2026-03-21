@@ -39,7 +39,7 @@ def calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m):
 
     return X, Y, Z_total
 
-def format_coord(x, y):
+def format_coord(x, y, Z):
     # Koordináta indexek mellé a mágneses térerősséget is kiírjuk a jobb felső sarokba
 
     # Kiszámoljuk a mátrix indexeit a koordinátákból
@@ -80,7 +80,7 @@ def import_csv():
     return dev_types, dxs, dys, width_m, height_m, cell_size_m
 
 
-if __name__ == "__main__":
+def show_regular_heatmap():
     # 1. Adatok bekérése
     dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
     print(dev_types)
@@ -112,6 +112,73 @@ if __name__ == "__main__":
     plt.ylabel('Y távolság (m)')
     plt.grid(True, linestyle='--', alpha=0.3)
 
-    plt.gca().format_coord = format_coord 
+    plt.gca().format_coord = lambda x, y: format_coord(x, y, Z)
     
     plt.show()
+
+def show_limit_heatmap():
+    # 1. Adatok bekérése
+    dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
+
+    # 2. Számítás
+    X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m)
+
+    # 3. Kategorizálás: szín alapján a határértékek szerint
+    # Zöld: 0 - MAGYAR_LAKOSSAGI_MAXIMUM
+    # Sárga: MAGYAR_LAKOSSAGI_MAXIMUM - MAGYAR_ALACSONY_AL
+    # Narancssárga: MAGYAR_ALACSONY_AL - MAGYAR_MAGAS_AL
+    # Piros: MAGYAR_MAGAS_AL felett
+    
+    Z_colored = np.zeros((*Z.shape, 3))  # RGB mátrix
+    
+    for i in range(Z.shape[0]):
+        for j in range(Z.shape[1]):
+            value = Z[i, j]
+            
+            if value <= MAGYAR_LAKOSSAGI_MAXIMUM:
+                # Zöld
+                Z_colored[i, j] = [0, 1, 0]
+            elif value <= MAGYAR_ALACSONY_AL:
+                # Sárga
+                Z_colored[i, j] = [1, 1, 0]
+            elif value <= MAGYAR_MAGAS_AL:
+                # Narancssárga
+                Z_colored[i, j] = [1, 0.647, 0]
+            else:
+                # Piros
+                Z_colored[i, j] = [1, 0, 0]
+
+    # 4. Megjelenítés
+    plt.figure(figsize=(10, 8))
+    
+    plt.imshow(Z_colored, extent=[X.min(), X.max(), Y.min(), Y.max()], 
+               origin='lower', aspect='auto')
+    
+    # Eszközök bejelölése a térképen
+    for i in range(len(dev_types)):
+        plt.scatter(dxs[i], dys[i], color='white', marker='x', s=100)
+        plt.text(dxs[i]+0.2, dys[i]+0.2, dev_types[i], color='black', fontsize=9, 
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.7, edgecolor='black', linewidth=0.5))
+
+    plt.title('Mágneses térerősség kategóriák (határértékek szerint)')
+    plt.xlabel('X távolság (m)')
+    plt.ylabel('Y távolság (m)')
+    plt.grid(True, linestyle='--', alpha=0.3)
+    
+    # Jelmagyarázat
+    from matplotlib.patches import Patch
+    legend_elements = [
+        Patch(facecolor=[0, 1, 0], label=f'0 - {MAGYAR_LAKOSSAGI_MAXIMUM} µT (Biztonságos)'),
+        Patch(facecolor=[1, 1, 0], label=f'{MAGYAR_LAKOSSAGI_MAXIMUM} - {MAGYAR_ALACSONY_AL} µT (Lakossági határt átlépte)'),
+        Patch(facecolor=[1, 0.647, 0], label=f'{MAGYAR_ALACSONY_AL} - {MAGYAR_MAGAS_AL} µT (Alacsony foglalkozási határt)'),
+        Patch(facecolor=[1, 0, 0], label=f'{MAGYAR_MAGAS_AL} µT felett (Magas foglalkozási határt)')
+    ]
+    plt.legend(handles=legend_elements, loc='upper right')
+    
+    plt.show(block=False)
+
+if __name__ == "__main__":
+    plt.ion()  # Interaktív mód bekapcsolása
+    show_regular_heatmap() # sima heatmap
+    show_limit_heatmap() # határértékek szerinti kategorizált heatmap
+    plt.show(block=True)  # Mindkét ablak nyitva marad, lehet navigálni közöttük
