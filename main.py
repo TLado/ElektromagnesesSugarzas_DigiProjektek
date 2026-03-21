@@ -111,6 +111,9 @@ def show_regular_heatmap():
     plt.xlabel('X távolság (m)')
     plt.ylabel('Y távolság (m)')
     plt.grid(True, linestyle='--', alpha=0.3)
+    
+    # Y tengely invertálása, hogy a szobaszerkesztővel megegyezzen
+    plt.gca().invert_yaxis()
 
     plt.gca().format_coord = lambda x, y: format_coord(x, y, Z)
     
@@ -151,8 +154,9 @@ def show_limit_heatmap():
     # 4. Megjelenítés
     plt.figure(figsize=(10, 8))
     
-    plt.imshow(Z_colored, extent=[X.min(), X.max(), Y.min(), Y.max()], 
-               origin='lower', aspect='auto')
+    # A Z_colored mátrixot az Y tengely mentén invertáljuk az origin='upper' miatt
+    plt.imshow(np.flipud(Z_colored), extent=[X.min(), X.max(), Y.min(), Y.max()], 
+               origin='upper', aspect='auto')
     
     # Eszközök bejelölése a térképen
     for i in range(len(dev_types)):
@@ -164,6 +168,9 @@ def show_limit_heatmap():
     plt.xlabel('X távolság (m)')
     plt.ylabel('Y távolság (m)')
     plt.grid(True, linestyle='--', alpha=0.3)
+    
+    # Y tengely invertálása, hogy a szobaszerkesztővel megegyezzen
+    plt.gca().invert_yaxis()
     
     # Jelmagyarázat
     from matplotlib.patches import Patch
@@ -177,8 +184,14 @@ def show_limit_heatmap():
     
     plt.show(block=False)
 
-if __name__ == "__main__":
+def display_heatmaps():
+    """Megjeleníti mindkét hőtérképet (reguláris és kategorizált)."""
     plt.ion()  # Interaktív mód bekapcsolása
     show_regular_heatmap() # sima heatmap
     show_limit_heatmap() # határértékek szerinti kategorizált heatmap
     plt.show(block=True)  # Mindkét ablak nyitva marad, lehet navigálni közöttük
+
+if __name__ == "__main__":
+    from room_layout import NotebookRoomDesigner
+    designer = NotebookRoomDesigner()
+    plt.show()

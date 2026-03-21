@@ -73,6 +73,7 @@ class NotebookRoomDesigner:
 
         self.ax_filename = self.fig.add_axes([0.73, 0.22, 0.19, 0.05])
         self.ax_export = self.fig.add_axes([0.73, 0.14, 0.19, 0.06])
+        self.ax_heatmaps = self.fig.add_axes([0.73, 0.06, 0.19, 0.06])
 
         self.width_box = TextBox(self.ax_width, "Width m", initial=str(self.inner_width_m))
         self.height_box = TextBox(self.ax_height, "Height m", initial=str(self.inner_height_m))
@@ -81,9 +82,11 @@ class NotebookRoomDesigner:
         self.generate_button = Button(self.ax_generate, "Generate Room")
         self.filename_box = TextBox(self.ax_filename, "CSV file", initial="room_layout.csv")
         self.export_button = Button(self.ax_export, "Export CSV")
+        self.heatmaps_button = Button(self.ax_heatmaps, "Show Heatmaps")
 
         self.generate_button.on_clicked(self.generate_room)
         self.export_button.on_clicked(self.export_csv)
+        self.heatmaps_button.on_clicked(self.show_heatmaps)
         self.fig.canvas.mpl_connect("button_press_event", self.on_click)
 
         self._create_room(self.inner_width_cells, self.inner_height_cells)
@@ -361,6 +364,11 @@ class NotebookRoomDesigner:
         print(f"CSV elmentve: {filename}")
         print(f"Export felbontás: {EXPORT_CELL_SIZE_M} m x {EXPORT_CELL_SIZE_M} m")
         print(f"Exportált sorok száma: {len(df)}")
+
+    def show_heatmaps(self, event=None):
+        """Megjeleníti a hőtérképeket."""
+        from main import display_heatmaps
+        display_heatmaps()
 
 
 designer = NotebookRoomDesigner()
