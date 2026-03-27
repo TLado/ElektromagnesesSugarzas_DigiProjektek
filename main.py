@@ -53,7 +53,6 @@ def format_coord(x, y, Z):
     return f'x={x:.2f}, y={y:.2f}'
 
 def import_csv(): 
-    # CSV beolvasása (figyelj a szeparátorra!)
     room_layout = pd.read_csv("room_layout.csv", sep=";")
 
     dev_types = []
@@ -79,13 +78,38 @@ def import_csv():
 
     return dev_types, dxs, dys, width_m, height_m, cell_size_m
 
+def import_csv_efficient():
+    room_layout_efficient = pd.read_csv("room_layout_efficient.csv", sep=";")
+
+    dev_types = []
+    dxs = []
+    dys = []
+
+    for index, row in room_layout_efficient.iterrows():
+        if row["device_name"] != "":
+            device_name = row["device_name"]
+            dx = row["x_m"]
+            dy = row["y_m"]
+            dev_types.append(device_name)
+            dxs.append(dx)
+            dys.append(dy)
+
+    cell_size_m = room_layout_efficient['cell_size_m'].iloc[0]
+    
+    width_m = room_layout_efficient['x_m'].max() + cell_size_m
+    height_m = room_layout_efficient['y_m'].max() + cell_size_m
+
+    return dev_types, dxs, dys, width_m, height_m, cell_size_m
 
 def show_regular_heatmap():
     # 1. Adatok bekérése
     dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
+    # dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv_efficient()
     print(dev_types)
     print(dxs)
     print(dys)
+    print(width_m)
+    print(height_m)
 
     # 2. Számítás
     X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m)
@@ -105,7 +129,7 @@ def show_regular_heatmap():
     # Eszközök bejelölése a térképen
     for i in range(len(dev_types)):
         plt.scatter(dxs[i], dys[i], color='white', marker='x', s=100)
-        plt.text(dxs[i]+0.2, dys[i]+0.2, dev_types[i], color='white', fontsize=9)
+        plt.text(dxs[i], dys[i], dev_types[i], color='white', fontsize=9)
 
     plt.title('Kombinált mágneses hőtérkép a szobában')
     plt.xlabel('X távolság (m)')
@@ -122,6 +146,7 @@ def show_regular_heatmap():
 def show_limit_heatmap():
     # 1. Adatok bekérése
     dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
+    # dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv_efficient()
 
     # 2. Számítás
     X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m)
@@ -161,7 +186,7 @@ def show_limit_heatmap():
     # Eszközök bejelölése a térképen
     for i in range(len(dev_types)):
         plt.scatter(dxs[i], dys[i], color='white', marker='x', s=100)
-        plt.text(dxs[i]+0.2, dys[i]+0.2, dev_types[i], color='black', fontsize=9, 
+        plt.text(dxs[i], dys[i], dev_types[i], color='black', fontsize=9, 
                 bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.7, edgecolor='black', linewidth=0.5))
 
     plt.title('Mágneses térerősség kategóriák (határértékek szerint)')
