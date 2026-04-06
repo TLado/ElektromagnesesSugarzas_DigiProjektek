@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Room_layout_EM_load/1.0.0": {
+        "runtime": {
+          "Room_layout_EM_load.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Room_layout_EM_load/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
