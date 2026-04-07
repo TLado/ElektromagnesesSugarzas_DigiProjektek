@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -11,6 +12,7 @@ namespace Room_layout_EM_load
     public partial class Form1 : Form
     {
         private GridCell[,] grid;
+        private List<DeviceInfo> devices = new List<DeviceInfo>();
 
         private int cellSizePx = 25;
 
@@ -23,20 +25,7 @@ namespace Room_layout_EM_load
         private int totalWidthCells;
         private int totalHeightCells;
 
-        private string currentTool = "monitor";
-
-        private Dictionary<string, string> toolMapping = new Dictionary<string, string>()
-        {
-            { "Számítógép monitor", "monitor" },
-            { "Asztali számítógép", "desktop_pc" },
-            { "Laptop", "laptop" },
-            { "Mobiltelefon (használat közben, asztalon)", "phone_active" },
-            { "Irodai WiFi router", "wifi_router" },
-            { "Nyomtató / multifunkciós gép (működés közben)", "printer_active" },
-            { "Fluoreszkáló / LED lámpa (mennyezeti)", "lamp" },
-            { "Irodai konnektor / hosszabbító", "power_strip" },
-            { "Szkenner / fénymásoló", "scanner" }
-        };
+        private string currentTool = "";
 
         private Dictionary<string, string> specialToolMapping = new Dictionary<string, string>()
         {
@@ -54,18 +43,70 @@ namespace Room_layout_EM_load
         {
             cmbGrid.SelectedIndex = 1; // 0.5
 
-            lstTools.DataSource = new BindingSource(toolMapping, null);
-            lstTools.DisplayMember = "Key";
-            lstTools.ValueMember = "Value";
+            string csvPath = Path.Combine(Application.StartupPath, "magnetic_data.csv");
+            devices = LoadDevicesFromCsv(csvPath);
 
-            lstSpecialTools.DataSource = new BindingSource(specialToolMapping, null);
+            lstTools.DataSource = null;
+            lstTools.DisplayMember = "EszkozNeve";
+            lstTools.ValueMember = "Id";
+            lstTools.DataSource = devices;
+
+            lstSpecialTools.DataSource = null;
             lstSpecialTools.DisplayMember = "Key";
             lstSpecialTools.ValueMember = "Value";
+            lstSpecialTools.DataSource = new BindingSource(specialToolMapping, null);
 
             if (lstTools.Items.Count > 0)
             {
                 lstTools.SelectedIndex = 0;
             }
+        }
+
+        private List<DeviceInfo> LoadDevicesFromCsv(string filePath)
+        {
+            List<DeviceInfo> result = new List<DeviceInfo>();
+
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show("A magnetic_data.csv fájl nem található:\n" + filePath);
+                return result;
+            }
+
+            string[] lines = File.ReadAllLines(filePath, Encoding.UTF8);
+
+            if (lines.Length <= 1)
+                return result;
+
+            for (int i = 1; i < lines.Length; i++)
+            {
+                string line = lines[i].Trim();
+
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                string[] parts = line.Split(',');
+
+                // 0 = eszkoz_neve
+                // 1 = magneses_sugarzas_mikrotesla
+                // 2 = meresi_tavolsag_meterben
+                // 3 = id
+                if (parts.Length < 4)
+                    continue;
+
+                string eszkozNeve = parts[0].Trim();
+                string id = parts[3].Trim();
+
+                if (string.IsNullOrWhiteSpace(eszkozNeve) || string.IsNullOrWhiteSpace(id))
+                    continue;
+
+                result.Add(new DeviceInfo
+                {
+                    EszkozNeve = eszkozNeve,
+                    Id = id
+                });
+            }
+
+            return result;
         }
 
         private void CreateRoom(int innerWidthCells, int innerHeightCells)
@@ -145,16 +186,17 @@ namespace Room_layout_EM_load
                     return;
                 }
 
+                int personCounter = 1;
+
                 using (StreamWriter sw = new StreamWriter(saveFileDialog1.FileName, false, Encoding.UTF8))
                 {
-                    sw.WriteLine("x;y;is_wall;items");
+                    sw.WriteLine("x;y;x_m;y_m;cell_size_m;is_wall;device_id");
 
                     for (int x = 0; x < totalWidthCells; x++)
                     {
                         for (int y = 0; y < totalHeightCells; y++)
                         {
                             GridCell cell = grid[x, y];
-                            string items = string.Join(",", cell.Items);
 
                             for (int subX = 0; subX < subdiv; subX++)
                             {
@@ -163,7 +205,37 @@ namespace Room_layout_EM_load
                                     int exportX = x * subdiv + subX;
                                     int exportY = y * subdiv + subY;
 
-                                    sw.WriteLine($"{exportX};{exportY};{(cell.IsWall ? 1 : 0)};{items}");
+                                    double xM = exportX * ExportCellSizeM;
+                                    double yM = exportY * ExportCellSizeM;
+
+                                    // Fal export
+                                    if (cell.IsWall)
+                                    {
+                                        sw.WriteLine($"{exportX};{exportY};{xM.ToString(CultureInfo.InvariantCulture)};{yM.ToString(CultureInfo.InvariantCulture)};{ExportCellSizeM.ToString(CultureInfo.InvariantCulture)};1;wall");
+                                        continue;
+                                    }
+
+                                    // Üres cella: ne exportáljuk
+                                    if (cell.Items.Count == 0)
+                                        continue;
+
+                                    // Egy cellában több eszköz esetén több sor
+                                    foreach (string item in cell.Items)
+                                    {
+                                        string exportId;
+
+                                        if (item == "person")
+                                        {
+                                            exportId = $"p{personCounter:D3}";
+                                            personCounter++;
+                                        }
+                                        else
+                                        {
+                                            exportId = item; // pl. i001
+                                        }
+
+                                        sw.WriteLine($"{exportX};{exportY};{xM.ToString(CultureInfo.InvariantCulture)};{yM.ToString(CultureInfo.InvariantCulture)};{ExportCellSizeM.ToString(CultureInfo.InvariantCulture)};0;{exportId}");
+                                    }
                                 }
                             }
                         }
@@ -180,9 +252,9 @@ namespace Room_layout_EM_load
 
         private void lstTools_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (lstTools.SelectedItem is KeyValuePair<string, string> selected)
+            if (lstTools.SelectedItem is DeviceInfo selected)
             {
-                currentTool = selected.Value;
+                currentTool = selected.Id;
                 lstSpecialTools.ClearSelected();
             }
         }
@@ -292,6 +364,9 @@ namespace Room_layout_EM_load
                 if (cell.IsWall)
                     return;
 
+                if (string.IsNullOrWhiteSpace(currentTool))
+                    return;
+
                 if (cell.Items.Contains(currentTool))
                     cell.Items.Remove(currentTool);
                 else
@@ -303,31 +378,10 @@ namespace Room_layout_EM_load
 
         private Color GetItemColor(string item)
         {
-            switch (item)
-            {
-                case "monitor":
-                    return Color.LightGreen;
-                case "desktop_pc":
-                    return Color.LightBlue;
-                case "laptop":
-                    return Color.CadetBlue;
-                case "phone_active":
-                    return Color.PeachPuff;
-                case "wifi_router":
-                    return Color.Khaki;
-                case "printer_active":
-                    return Color.Plum;
-                case "lamp":
-                    return Color.LightYellow;
-                case "power_strip":
-                    return Color.LightGray;
-                case "scanner":
-                    return Color.LightSalmon;
-                case "person":
-                    return Color.Pink;
-                default:
-                    return Color.White;
-            }
+            if (item == "person")
+                return Color.Pink;
+
+            return Color.LightBlue;
         }
 
         private string GetCellLabel(GridCell cell)
@@ -340,43 +394,29 @@ namespace Room_layout_EM_load
 
             List<string> labels = new List<string>();
 
-            foreach (string item in cell.Items)
+            foreach (string itemId in cell.Items)
             {
-                switch (item)
+                if (itemId == "person")
                 {
-                    case "monitor":
-                        labels.Add("MON");
-                        break;
-                    case "desktop_pc":
-                        labels.Add("PC");
-                        break;
-                    case "laptop":
-                        labels.Add("L");
-                        break;
-                    case "phone_active":
-                        labels.Add("PH");
-                        break;
-                    case "wifi_router":
-                        labels.Add("R");
-                        break;
-                    case "printer_active":
-                        labels.Add("PR");
-                        break;
-                    case "lamp":
-                        labels.Add("LMP");
-                        break;
-                    case "power_strip":
-                        labels.Add("PS");
-                        break;
-                    case "scanner":
-                        labels.Add("SC");
-                        break;
-                    case "person":
-                        labels.Add("U");
-                        break;
-                    default:
-                        labels.Add(item.Substring(0, Math.Min(2, item.Length)).ToUpper());
-                        break;
+                    labels.Add("U");
+                }
+                else
+                {
+                    DeviceInfo device = devices.FirstOrDefault(d => d.Id == itemId);
+
+                    if (device != null)
+                    {
+                        string nev = device.EszkozNeve;
+
+                        if (nev.Length <= 3)
+                            labels.Add(nev.ToUpper());
+                        else
+                            labels.Add(nev.Substring(0, Math.Min(3, nev.Length)).ToUpper());
+                    }
+                    else
+                    {
+                        labels.Add(itemId.ToUpper());
+                    }
                 }
             }
 

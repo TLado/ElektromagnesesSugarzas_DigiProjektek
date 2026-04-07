@@ -1,0 +1,47 @@
+﻿eszkoz_neve,magneses_sugarzas_mikrotesla,meresi_tavolsag_meterben,id
+Aszinkron motor (50 Hz),50,0.5,i001
+Nagyteljesítményű motor (~ 200 kW),200,0.1,i002
+Elosztó transzformátor,100,1,i003
+Nagy teljesítményű transzformátor (beltéri),500,0.5,i004
+Kis elosztó transzformátor (oszlopon),10,5,i005
+CT scanner (forgó gantry közel),0.5,1,i006
+EKG monitor (elektródák közel),0.1,0.5,i007
+Infúziós pumpa (elektronikus),0.5,0.5,i008
+Számítógép monitor / LCD kijelző,1,0.5,i009
+Fluoreszkáló / LED lámpa (mennyezeti),0.5,2,i010
+Nyomtató / multifunkciós gép (működés közben),5,1,i011
+Irodai konnektor / hosszabbító kábel,2,0.5,i012
+Irodai átlag (asztal közelében),0.6,1,i013
+Elektromos vezeték a falban / mennyezetben,1,1,i014
+Turbina-generátor (nagy teljesítményű),500,2,i015
+Nagyfeszültségű transzformátor,200,1,i016
+Hűtőszivattyú motor (nagyteljesítményű),100,0.5,i017
+Vezérlőrúd hajtómotor,50,1,i018
+Nagyáramú kábelezés (DC/AC),1000,0.5,i019
+Generátor terem átlag,20,5,i020
+Ívhegesztő gép (AC),200,0.5,i021
+Hegesztő transzformátor,100,0.5,i022
+Hegesztő kábel (nagyáramú),300,0.5,i023
+Hegesztő munkaasztal átlag,10,1,i024
+Földelő kábel / clamp,50,0.3,i025
+Nagy teljesítményű motor (szivattyú),100,0.5,i026
+Elektromos ívkemence,500,1,i027
+Formázó gép (hidraulikus/elektromos),50,0.5,i028
+Öntődarab hűtőszalag motor,50,1,i029
+Transzformátor (öntödei),200,0.5,i030
+Nagyáramú kábelezés,300,0.3,i031
+Öntödei átlag (munkaállomás),20,2,i032
+Robotkar (elektromos hajtás),50,1,i033
+Nagy teljesítményű motor (szalag),100,0.5,i034
+Összeszerelő állomás transzformátor,20,0.5,i035
+Elektromos szerszám (csavarhúzó),10,0.3,i036
+Nagyáramú kábelezés (gyártósor),50,0.5,i037
+Átlagos gyártósor (munkaállomás),10,1,i038
+Felsővezeték közelében (oszlopon),200,0.5,i039
+Oszloptranszformátor (22 kV),150,0.5,i040
+Nagyáramú kábel / busbar (oszlop közel),300,0.5,i041
+Élő vezeték javítás (FAM oszlopon),100,0.3,i042
+Oszlop melletti földkábel csatlakozás,100,0.3,i043
+Mérőberendezés / panel (oszlop mellett),20,1,i044
+Átlagos FAM munkaterület (oszlopon),50,1,i045
+Földelő / clamp rögzítése (oszlop közel),50,0.3,i046

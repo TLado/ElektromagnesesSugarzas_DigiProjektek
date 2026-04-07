@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\feket\\source\\repos\\Room_layout_EM_load\\Room_layout_EM_load\\Room_layout_EM_load.csproj",
+      "projectUniqueName": "C:\\Users\\feket\\source\\repos\\ElektromagnesesSugarzas_DigiProjektek2\\Room_layout_EM_load\\Room_layout_EM_load\\Room_layout_EM_load.csproj",
       "projectName": "Room_layout_EM_load",
-      "projectPath": "C:\\Users\\feket\\source\\repos\\Room_layout_EM_load\\Room_layout_EM_load\\Room_layout_EM_load.csproj",
+      "projectPath": "C:\\Users\\feket\\source\\repos\\ElektromagnesesSugarzas_DigiProjektek2\\Room_layout_EM_load\\Room_layout_EM_load\\Room_layout_EM_load.csproj",
       "packagesPath": "C:\\Users\\feket\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\feket\\source\\repos\\Room_layout_EM_load\\Room_layout_EM_load\\obj\\",
+      "outputPath": "C:\\Users\\feket\\source\\repos\\ElektromagnesesSugarzas_DigiProjektek2\\Room_layout_EM_load\\Room_layout_EM_load\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
