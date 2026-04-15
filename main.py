@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import pandas as pd
+from matplotlib.patches import Rectangle
 
 # CSV beolvasása
 df = pd.read_csv('cleaned_magnetic_data.csv')
@@ -12,7 +13,7 @@ devices_and_values = {
     for _, row in df.iterrows()
 }
 devices_and_ids = {row['id']: row['eszkoz_neve'] for _, row in df.iterrows()}
-RES = 0.1                     # felbontás (10 cm), ez a heatmap felbontása
+RES = 0.125                     # felbontás (12.5 cm), ez a heatmap felbontása - ENNEK OSZTÓJÁNAK KELL LENNIE 0.25-EL!
 MAGYAR_LAKOSSAGI_MAXIMUM = 100 # lakossági helyeken ekkora fluxussűrűség fogadható el (azért alacsonyabb, mint a foglalkozási maximum, mivel itt akár a nap 24 órájában is tartózkodhatnak)
 MAGYAR_ALACSONY_AL = 1000 # ekkora fluxussűrűség felett már intézkedni kell a munkavállaló védelmére, de még szabad benne dolgozni (AL egyébként Action Level)
 MAGYAR_MAGAS_AL = 6000 # ez a maximális határ, amit még óvintézkedés esetén is engedélyezni lehet emberi munkára
@@ -55,6 +56,7 @@ def import_csv():
     # ARCHIVÁLT FÜGGVÉNY
     room_layout = pd.read_csv("room_layout.csv", sep=";")
 
+
     dev_types = []
     dxs = []
     dys = []
@@ -80,13 +82,18 @@ def import_csv():
 
 def import_csv_efficient():
     room_layout_efficient = pd.read_csv("room_layout.csv", sep=";")
+    # FONTOS MEGJEGYEZNI, hogy 2*25 cm-el nagyobb maga szoba, mint amit beírtunk az applikációba, mert a falakat ott nem számolta bele
+    # a heatmapekben viszont már a falak is egy cellaként vannak értelmezve
 
     dev_types = []
     dxs = []
     dys = []
+    walls = []
 
     for index, row in room_layout_efficient.iterrows():
-        if row["device_id"] != "" and row["device_id"] != "wall": # jelenleg falakkal nem foglalkozunk!
+        if row["device_id"] == "wall":
+            walls.append((row["x_m"], row["y_m"]))
+        elif row["device_id"] != "":
             device_id = row["device_id"]
             dx = row["x_m"]
             dy = row["y_m"]
@@ -99,12 +106,12 @@ def import_csv_efficient():
     width_m = room_layout_efficient['x_m'].max() + cell_size_m
     height_m = room_layout_efficient['y_m'].max() + cell_size_m
 
-    return dev_types, dxs, dys, width_m, height_m, cell_size_m
+    return dev_types, dxs, dys, width_m, height_m, cell_size_m, walls
 
 def show_regular_heatmap():
     # 1. Adatok bekérése
     # dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
-    dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv_efficient()
+    dev_types, dxs, dys, width_m, height_m, cell_size_m, walls = import_csv_efficient()
     print(f"dev_types: {dev_types}")
     print(f"dxs: {dxs}")
     print(f"dys: {dys}")
@@ -122,6 +129,10 @@ def show_regular_heatmap():
     norm = LogNorm(vmin=0.0001, vmax=max(Z.max(), 10))
     
     cp = plt.pcolormesh(X, Y, Z, shading='auto', cmap='magma', norm=norm)
+    # Falak rárajzolása új rétegként
+    for w in walls:
+        plt.gca().add_patch(Rectangle((w[0], w[1]), cell_size_m, cell_size_m, 
+                                      facecolor='gray', edgecolor='black', alpha=1.0, zorder=5))
     
     # Színskála és feliratok (r'' a SyntaxWarning elkerüléséhez)
     plt.colorbar(cp, label=r'Mágneses térerősség ($\mu T$)')
@@ -140,13 +151,15 @@ def show_regular_heatmap():
     plt.gca().invert_yaxis()
 
     plt.gca().format_coord = lambda x, y: format_coord(x, y, Z)
-    
+    # Kilógó perem levágása
+    plt.xlim(0, width_m)
+    plt.ylim(height_m, 0) # Elöl a nagyobb érték az invertált Y tengely miatt
     plt.show()
 
 def show_limit_heatmap():
     # 1. Adatok bekérése
     # dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
-    dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv_efficient()
+    dev_types, dxs, dys, width_m, height_m, cell_size_m, walls = import_csv_efficient()
 
     # 2. Számítás
     X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m)
@@ -182,6 +195,10 @@ def show_limit_heatmap():
     # A Z_colored mátrixot az Y tengely mentén invertáljuk az origin='upper' miatt
     plt.imshow(np.flipud(Z_colored), extent=[X.min(), X.max(), Y.min(), Y.max()], 
                origin='upper', aspect='auto')
+    # Falak rárajzolása új rétegként
+    for w in walls:
+        plt.gca().add_patch(Rectangle((w[0], w[1]), cell_size_m, cell_size_m, 
+                                      facecolor='gray', edgecolor='black', alpha=1.0, zorder=5))
     
     # Eszközök bejelölése a térképen
     for i in range(len(dev_types)):
