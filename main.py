@@ -79,7 +79,7 @@ def import_csv():
     return dev_types, dxs, dys, width_m, height_m, cell_size_m
 
 def import_csv_efficient():
-    room_layout_efficient = pd.read_csv("room_layout_efficient.csv", sep=";")
+    room_layout_efficient = pd.read_csv("room_layout.csv", sep=";")
 
     dev_types = []
     dxs = []
