@@ -1,3 +1,8 @@
 room_layout.csv
 test.py
 __pycache__
+Room_layout_EM_load/.vs
+Room_layout_EM_load/Room_layout_EM_load/bin
+Room_layout_EM_load/Room_layout_EM_load/obj
+room_layout_efficient_regi.csv
+room_layout_efficient.csv
