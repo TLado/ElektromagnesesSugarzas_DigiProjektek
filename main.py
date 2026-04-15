@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import pandas as pd
 from matplotlib.patches import Rectangle
+from skimage.draw import line
 
 # CSV beolvasása
 df = pd.read_csv('cleaned_magnetic_data.csv')
@@ -19,7 +20,8 @@ MAGYAR_ALACSONY_AL = 1000 # ekkora fluxussűrűség felett már intézkedni kell
 MAGYAR_MAGAS_AL = 6000 # ez a maximális határ, amit még óvintézkedés esetén is engedélyezni lehet emberi munkára
 
 
-def calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m):
+def calculate_combined_heatmap_old(dev_types, dxs, dys, width_m, height_m):
+    # ARCHIVÁLT FÜGGVÉNY, SUGÁR KÖVETÉS NÉLKÜL, TEHÁT FALAKAT NEM VESZI FIGYELEMBE, CSAK A TÁVOLSÁGOT
     # Rács létrehozása
     x = np.arange(0, width_m + RES, RES)
     y = np.arange(0, height_m + RES, RES)
@@ -36,6 +38,40 @@ def calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m):
         B_ref = devices_and_values[dev_types[i]][0]
         # Inverz köbös törvény (pontszerű forrás)
         Z_total += B_ref * (devices_and_values[dev_types[i]][1] / dist)**3
+
+    return X, Y, Z_total
+
+def calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m, walls, cell_size_m):
+    # Az itt használt sugárkövetés lényegében azt jelenti, hogy minden pixelnél megnézzük, hogy a forrástól a pixelig húzott egyenes vonal metszi-e a falakat. 
+    # Ha igen, akkor az adott forrás nem járul hozzá a térerősséghez azon a ponton, ha nem, akkor pedig a távolság alapján számoljuk a hozzájárulást.
+    x = np.arange(0, width_m + RES, RES)
+    y = np.arange(0, height_m + RES, RES)
+    X, Y = np.meshgrid(x, y)
+    Z_total = np.zeros_like(X)
+
+    # 1. Fal-maszk mátrix létrehozása
+    wall_mask = np.zeros(Z_total.shape, dtype=bool)
+    ratio = int(cell_size_m / RES)
+    for w in walls:
+        wr, wc = int(w[1]/RES), int(w[0]/RES)
+        if 0 <= wr < wall_mask.shape[0] and 0 <= wc < wall_mask.shape[1]:
+            wall_mask[wr:wr+ratio, wc:wc+ratio] = True
+
+    # 2. Számítás sugárkövetéssel
+    for i in range(len(dev_types)):
+        B_ref = devices_and_values[dev_types[i]][0]
+        dev_dist = devices_and_values[dev_types[i]][1]
+        sr, sc = int(dys[i]/RES), int(dxs[i]/RES) # Forrás mátrix indexei
+        
+        for r in range(Z_total.shape[0]):
+            for c in range(Z_total.shape[1]):
+                # Vonalhúzás a forrás és a vizsgált pont közé
+                rr, cc = line(sr, sc, r, c)
+                
+                # Ha a vonal nem érint egyetlen "True" (fal) pontot sem
+                if not np.any(wall_mask[rr, cc]):
+                    dist = max(np.sqrt((X[r, c] - dxs[i])**2 + (Y[r, c] - dys[i])**2), 0.05)
+                    Z_total[r, c] += B_ref * (dev_dist / dist)**3
 
     return X, Y, Z_total
 
@@ -109,6 +145,7 @@ def import_csv_efficient():
     return dev_types, dxs, dys, width_m, height_m, cell_size_m, walls
 
 def show_regular_heatmap():
+    # FONTOS MEGJEGYEZNI, hogy a pcolormesh a kapott koordinátákat mindig a cella közepének tekinti
     # 1. Adatok bekérése
     # dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
     dev_types, dxs, dys, width_m, height_m, cell_size_m, walls = import_csv_efficient()
@@ -119,7 +156,8 @@ def show_regular_heatmap():
     print(f"height_m: {height_m}")
 
     # 2. Számítás
-    X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m)
+    X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m, walls, cell_size_m)
+    Z[Z == 0] = 0.0001  # A pontosan 0 értékek felhúzása a színskála aljára, hogy ne fehér legyen
 
     # 3. Megjelenítés
     plt.figure(figsize=(10, 8))
@@ -128,7 +166,7 @@ def show_regular_heatmap():
     # vmin-t érdemes alacsonyra venni, hogy a távoli gyenge mezők is látszódjanak
     norm = LogNorm(vmin=0.0001, vmax=max(Z.max(), 10))
     
-    cp = plt.pcolormesh(X, Y, Z, shading='auto', cmap='magma', norm=norm)
+    cp = plt.pcolormesh(X + RES/2, Y + RES/2, Z, shading='auto', cmap='magma', norm=norm) # egy kicsit eltoljuk a koordinátákat, hogy a cellák közepére kerüljenek a színek
     # Falak rárajzolása új rétegként
     for w in walls:
         plt.gca().add_patch(Rectangle((w[0], w[1]), cell_size_m, cell_size_m, 
@@ -162,7 +200,7 @@ def show_limit_heatmap():
     dev_types, dxs, dys, width_m, height_m, cell_size_m, walls = import_csv_efficient()
 
     # 2. Számítás
-    X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m)
+    X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m, walls, cell_size_m)
 
     # 3. Kategorizálás: szín alapján a határértékek szerint
     # Zöld: 0 - MAGYAR_LAKOSSAGI_MAXIMUM
@@ -193,7 +231,8 @@ def show_limit_heatmap():
     plt.figure(figsize=(10, 8))
     
     # A Z_colored mátrixot az Y tengely mentén invertáljuk az origin='upper' miatt
-    plt.imshow(np.flipud(Z_colored), extent=[X.min(), X.max(), Y.min(), Y.max()], 
+    plt.imshow(np.flipud(Z_colored), 
+               extent=[X.min(), X.max()+RES, Y.min(), Y.max()+RES], # bevallom, nem tudom miért, de el kellett tolni a max értéket, hogy jó legyen az átfedés
                origin='upper', aspect='auto')
     # Falak rárajzolása új rétegként
     for w in walls:
@@ -224,6 +263,10 @@ def show_limit_heatmap():
     ]
     plt.legend(handles=legend_elements, loc='upper right')
     
+    # Kilógó perem levágása
+    plt.xlim(0, width_m)
+    plt.ylim(height_m, 0) # Elöl a nagyobb érték az invertált Y tengely miatt
+
     plt.show(block=False)
 
 def display_heatmaps():
