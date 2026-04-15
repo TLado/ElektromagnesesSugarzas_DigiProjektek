@@ -177,8 +177,8 @@ def show_regular_heatmap():
     
     # Eszközök bejelölése a térképen
     for i in range(len(dev_types)):
-        plt.scatter(dxs[i], dys[i], color='white', marker='x', s=100)
-        plt.text(dxs[i], dys[i], devices_and_ids[dev_types[i]], color='white', fontsize=9)
+        plt.scatter(dxs[i]+RES/2, dys[i]+RES/2, color='white', edgecolors='grey', marker='o', s=100)
+        # plt.text(dxs[i], dys[i], devices_and_ids[dev_types[i]], color='white', fontsize=9)
 
     plt.title('Kombinált mágneses hőtérkép a szobában')
     plt.xlabel('X távolság (m)')
@@ -192,6 +192,37 @@ def show_regular_heatmap():
     # Kilógó perem levágása
     plt.xlim(0, width_m)
     plt.ylim(height_m, 0) # Elöl a nagyobb érték az invertált Y tengely miatt
+
+    # Hover effect: amikor az egér egy eszköz közelébe kerül, megjelenik egy címke a névvel
+    annot = plt.gca().annotate("", xy=(0,0), xytext=(10,10), textcoords="offset points",
+                               bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.9, edgecolor="black"), 
+                               color="black", fontsize=9, zorder=10)
+    annot.set_visible(False)
+
+    def hover(event):
+        if event.inaxes == plt.gca() and len(dxs) > 0:
+            # Távolságok kiszámítása az egér és az összes eszköz között
+            dists = np.sqrt((np.array(dxs) - event.xdata)**2 + (np.array(dys) - event.ydata)**2)
+            idx = np.argmin(dists)
+            
+            # Ha 0.5 méternél közelebb van az egér az eszközhöz, mutassa a címkét
+            if dists[idx] < 0.5:
+                annot.xy = (dxs[idx], dys[idx])
+                annot.set_text(devices_and_ids[dev_types[idx]])
+                # Irányváltás, ha a plot jobb oldalán vagyunk, hogy ne lógjon ki a címke
+                if event.xdata > width_m / 2:
+                    annot.set_ha('right')         # Szöveg igazítása balra felé
+                    annot.set_position((-5, 5)) # Doboz eltolása balra és fel
+                else:
+                    annot.set_ha('left')          # Szöveg igazítása jobbra felé
+                    annot.set_position((5, 5))
+                annot.set_visible(True)
+            else:
+                annot.set_visible(False)
+            plt.gcf().canvas.draw_idle()
+
+    plt.gcf().canvas.mpl_connect("motion_notify_event", hover)
+
     plt.show()
 
 def show_limit_heatmap():
@@ -241,9 +272,9 @@ def show_limit_heatmap():
     
     # Eszközök bejelölése a térképen
     for i in range(len(dev_types)):
-        plt.scatter(dxs[i], dys[i], color='white', marker='x', s=100)
-        plt.text(dxs[i], dys[i], devices_and_ids[dev_types[i]], color='black', fontsize=9, 
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.7, edgecolor='black', linewidth=0.5))
+        plt.scatter(dxs[i]+RES/2, dys[i]+RES/2, color='white', edgecolors='grey', marker='o', s=100)
+        # plt.text(dxs[i], dys[i], devices_and_ids[dev_types[i]], color='black', fontsize=9, 
+                # bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.7, edgecolor='black', linewidth=0.5))
 
     plt.title('Mágneses térerősség kategóriák (határértékek szerint)')
     plt.xlabel('X távolság (m)')
@@ -261,12 +292,46 @@ def show_limit_heatmap():
         Patch(facecolor=[1, 0.647, 0], label=f'{MAGYAR_ALACSONY_AL} - {MAGYAR_MAGAS_AL} µT (Alacsony foglalkozási határt)'),
         Patch(facecolor=[1, 0, 0], label=f'{MAGYAR_MAGAS_AL} µT felett (Magas foglalkozási határt)')
     ]
-    plt.legend(handles=legend_elements, loc='upper right')
+    # Jelmagyarázat kihelyezése a grafikon alá
+    plt.legend(handles=legend_elements, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=2)
+    
+    # Margók igazítása, hogy biztosan beférjen
+    plt.tight_layout()
     
     # Kilógó perem levágása
     plt.xlim(0, width_m)
     plt.ylim(height_m, 0) # Elöl a nagyobb érték az invertált Y tengely miatt
 
+    # Hover effect: amikor az egér egy eszköz közelébe kerül, megjelenik egy címke a névvel
+    annot = plt.gca().annotate("", xy=(0,0), xytext=(10,10), textcoords="offset points",
+                               bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.9, edgecolor="black"), 
+                               color="black", fontsize=9, zorder=10)
+    annot.set_visible(False)
+
+    def hover(event):
+        if event.inaxes == plt.gca() and len(dxs) > 0:
+            # Távolságok kiszámítása az egér és az összes eszköz között
+            dists = np.sqrt((np.array(dxs) - event.xdata)**2 + (np.array(dys) - event.ydata)**2)
+            idx = np.argmin(dists)
+            
+            # Ha 0.5 méternél közelebb van az egér az eszközhöz, mutassa a címkét
+            if dists[idx] < 0.5:
+                annot.xy = (dxs[idx], dys[idx])
+                annot.set_text(devices_and_ids[dev_types[idx]])
+                # Irányváltás, ha a plot jobb oldalán vagyunk, hogy ne lógjon ki a címke
+                if event.xdata > width_m / 2:
+                    annot.set_ha('right')         # Szöveg igazítása balra felé
+                    annot.set_position((-5, 5)) # Doboz eltolása balra és fel
+                else:
+                    annot.set_ha('left')          # Szöveg igazítása jobbra felé
+                    annot.set_position((5, 5))
+                annot.set_visible(True)
+            else:
+                annot.set_visible(False)
+            plt.gcf().canvas.draw_idle()
+
+    plt.gcf().canvas.mpl_connect("motion_notify_event", hover)
+    
     plt.show(block=False)
 
 def display_heatmaps():
