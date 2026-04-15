@@ -6,13 +6,12 @@ import pandas as pd
 # CSV beolvasása
 df = pd.read_csv('cleaned_magnetic_data.csv')
 
-# Konstansok
-
-# Dictionary létrehozása: { 'eszköz neve': [sugárzás, távolság] }
+# Dictionary létrehozása: { 'id': [sugárzás, távolság] }
 devices_and_values = {
-    row['eszkoz_neve']: [row['magneses_sugarzas_mikrotesla'], row['meresi_tavolsag_meterben']] 
+    row['id']: [row['magneses_sugarzas_mikrotesla'], row['meresi_tavolsag_meterben']] 
     for _, row in df.iterrows()
 }
+devices_and_ids = {row['id']: row['eszkoz_neve'] for _, row in df.iterrows()}
 RES = 0.1                     # felbontás (10 cm), ez a heatmap felbontása
 MAGYAR_LAKOSSAGI_MAXIMUM = 100 # lakossági helyeken ekkora fluxussűrűség fogadható el (azért alacsonyabb, mint a foglalkozási maximum, mivel itt akár a nap 24 órájában is tartózkodhatnak)
 MAGYAR_ALACSONY_AL = 1000 # ekkora fluxussűrűség felett már intézkedni kell a munkavállaló védelmére, de még szabad benne dolgozni (AL egyébként Action Level)
@@ -53,6 +52,7 @@ def format_coord(x, y, Z):
     return f'x={x:.2f}, y={y:.2f}'
 
 def import_csv(): 
+    # ARCHIVÁLT FÜGGVÉNY
     room_layout = pd.read_csv("room_layout.csv", sep=";")
 
     dev_types = []
@@ -86,11 +86,11 @@ def import_csv_efficient():
     dys = []
 
     for index, row in room_layout_efficient.iterrows():
-        if row["device_name"] != "":
-            device_name = row["device_name"]
+        if row["device_id"] != "" and row["device_id"] != "wall": # jelenleg falakkal nem foglalkozunk!
+            device_id = row["device_id"]
             dx = row["x_m"]
             dy = row["y_m"]
-            dev_types.append(device_name)
+            dev_types.append(device_id)
             dxs.append(dx)
             dys.append(dy)
 
@@ -103,13 +103,13 @@ def import_csv_efficient():
 
 def show_regular_heatmap():
     # 1. Adatok bekérése
-    dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
-    # dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv_efficient()
-    print(dev_types)
-    print(dxs)
-    print(dys)
-    print(width_m)
-    print(height_m)
+    # dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
+    dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv_efficient()
+    print(f"dev_types: {dev_types}")
+    print(f"dxs: {dxs}")
+    print(f"dys: {dys}")
+    print(f"width_m: {width_m}")
+    print(f"height_m: {height_m}")
 
     # 2. Számítás
     X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m)
@@ -129,7 +129,7 @@ def show_regular_heatmap():
     # Eszközök bejelölése a térképen
     for i in range(len(dev_types)):
         plt.scatter(dxs[i], dys[i], color='white', marker='x', s=100)
-        plt.text(dxs[i], dys[i], dev_types[i], color='white', fontsize=9)
+        plt.text(dxs[i], dys[i], devices_and_ids[dev_types[i]], color='white', fontsize=9)
 
     plt.title('Kombinált mágneses hőtérkép a szobában')
     plt.xlabel('X távolság (m)')
@@ -145,8 +145,8 @@ def show_regular_heatmap():
 
 def show_limit_heatmap():
     # 1. Adatok bekérése
-    dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
-    # dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv_efficient()
+    # dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv()
+    dev_types, dxs, dys, width_m, height_m, cell_size_m = import_csv_efficient()
 
     # 2. Számítás
     X, Y, Z = calculate_combined_heatmap(dev_types, dxs, dys, width_m, height_m)
@@ -186,7 +186,7 @@ def show_limit_heatmap():
     # Eszközök bejelölése a térképen
     for i in range(len(dev_types)):
         plt.scatter(dxs[i], dys[i], color='white', marker='x', s=100)
-        plt.text(dxs[i], dys[i], dev_types[i], color='black', fontsize=9, 
+        plt.text(dxs[i], dys[i], devices_and_ids[dev_types[i]], color='black', fontsize=9, 
                 bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.7, edgecolor='black', linewidth=0.5))
 
     plt.title('Mágneses térerősség kategóriák (határértékek szerint)')
@@ -217,6 +217,7 @@ def display_heatmaps():
     plt.show(block=True)  # Mindkét ablak nyitva marad, lehet navigálni közöttük
 
 if __name__ == "__main__":
-    from room_layout import NotebookRoomDesigner
-    designer = NotebookRoomDesigner()
-    plt.show()
+    # from room_layout import NotebookRoomDesigner
+    # designer = NotebookRoomDesigner()
+    # plt.show()
+    display_heatmaps()

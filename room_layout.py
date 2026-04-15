@@ -1,3 +1,5 @@
+# ARCHIVÁLT FÁJL - Szobatervező már C#-ban van megírva
+
 import matplotlib
 matplotlib.use("QtAgg")
 
