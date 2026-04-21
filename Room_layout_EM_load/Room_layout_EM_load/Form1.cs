@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace Room_layout_EM_load
 {
@@ -459,6 +460,8 @@ namespace Room_layout_EM_load
 
                 SaveCsvToPath(csvPath);
 
+                RunPythonScript(targetFolder);
+
                 MessageBox.Show("CSV elmentve ide:\n" + csvPath);
             }
             catch (Exception ex)
@@ -485,6 +488,59 @@ namespace Room_layout_EM_load
             }
 
             return Application.StartupPath;
+        }
+
+        private void RunPythonScript(string targetFolder)
+        {
+            string scriptPath = Path.Combine(targetFolder, "main.py");
+
+            if (!File.Exists(scriptPath))
+            {
+                MessageBox.Show("A main.py nem található itt:\n" + scriptPath);
+                return;
+            }
+
+            try
+            {
+                ProcessStartInfo start = new ProcessStartInfo();
+                start.FileName = "python";
+                start.Arguments = $"\"{scriptPath}\"";
+                start.WorkingDirectory = targetFolder;
+                start.UseShellExecute = false;
+                start.RedirectStandardOutput = true;
+                start.RedirectStandardError = true;
+                start.CreateNoWindow = true;
+
+                using (Process process = Process.Start(start))
+                {
+                    if (process == null)
+                    {
+                        MessageBox.Show("Nem sikerült elindítani a Python folyamatot.");
+                        return;
+                    }
+
+                    string output = process.StandardOutput.ReadToEnd();
+                    string error = process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+
+                    if (process.ExitCode != 0)
+                    {
+                        MessageBox.Show("A Python script hibával leállt:\n\n" + error);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrWhiteSpace(output))
+                        {
+                            MessageBox.Show("A Python script lefutott:\n\n" + output);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Hiba a Python script indítása közben:\n" + ex.Message);
+            }
         }
 
         private void SaveCsvToPath(string filePath)
