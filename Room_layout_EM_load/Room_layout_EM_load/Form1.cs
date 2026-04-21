@@ -446,7 +446,102 @@ namespace Room_layout_EM_load
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (grid == null)
+            {
+                MessageBox.Show("Először hozz létre egy szobát.");
+                return;
+            }
 
+            try
+            {
+                string targetFolder = GetTargetFolder();
+                string csvPath = Path.Combine(targetFolder, "room_layout.csv");
+
+                SaveCsvToPath(csvPath);
+
+                MessageBox.Show("CSV elmentve ide:\n" + csvPath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Hiba mentés közben: " + ex.Message);
+            }
+        }
+        private string GetTargetFolder()
+        {
+            DirectoryInfo dir = new DirectoryInfo(Application.StartupPath);
+
+            while (dir != null)
+            {
+                var slnFiles = dir.GetFiles("*.sln");
+                if (slnFiles.Length > 0)
+                {
+                    if (dir.Parent != null)
+                        return dir.Parent.FullName;
+
+                    return dir.FullName;
+                }
+
+                dir = dir.Parent;
+            }
+
+            return Application.StartupPath;
+        }
+
+        private void SaveCsvToPath(string filePath)
+        {
+            int personCounter = 1;
+
+            using (StreamWriter sw = new StreamWriter(filePath, false, Encoding.UTF8))
+            {
+                sw.WriteLine("x;y;x_m;y_m;cell_size_m;is_wall;device_id");
+
+                for (int x = 0; x < totalWidthCells; x++)
+                {
+                    for (int y = 0; y < totalHeightCells; y++)
+                    {
+                        GridCell cell = grid[x, y];
+
+                        double xM = x * gridSizeM;
+                        double yM = y * gridSizeM;
+
+                        if (cell.IsWall)
+                        {
+                            sw.WriteLine(
+                                $"{x};{y};" +
+                                $"{xM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"{yM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"{gridSizeM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"1;wall");
+                            continue;
+                        }
+
+                        if (cell.Items.Count == 0)
+                            continue;
+
+                        foreach (string item in cell.Items)
+                        {
+                            string exportId;
+
+                            if (item == "person")
+                            {
+                                exportId = $"p{personCounter:D3}";
+                                personCounter++;
+                            }
+                            else
+                            {
+                                exportId = item;
+                            }
+
+                            sw.WriteLine(
+                                $"{x};{y};" +
+                                $"{xM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"{yM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"{gridSizeM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"0;{exportId}");
+                        }
+                    }
+                }
+            }
         }
     }
 }
