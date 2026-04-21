@@ -1,5 +1,8 @@
 # Elektromágneses Sugárzás Projekt a Digitális Projektek tárgyhoz
 
+Függőségek letöltése (command line-ban):
+pip install -r requirements.txt
+
 **Cél**: egy olyan program létrehozása, amely képes megbecsülni a beltéri elektromágneses terhelést, tehát egy olyan futtatható python fájl, ami a bemeneti változók megadása után (laptopok száma stb.) a terhelési mutatót dobja ki.  
 
 **Feladat részletesebben**: 
