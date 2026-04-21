@@ -40,12 +40,14 @@
             label1 = new Label();
             groupBox1 = new GroupBox();
             lstSpecialTools = new ListBox();
-            lstTools = new ListBox();
             groupBox2 = new GroupBox();
+            btnSave = new Button();
             btnExport = new Button();
+            groupBox3 = new GroupBox();
+            tbFilter = new TextBox();
+            lstTools = new ListBox();
             canvasPanel = new Panel();
             saveFileDialog1 = new SaveFileDialog();
-            groupBox3 = new GroupBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -116,6 +118,7 @@
             // 
             // btnGenerate
             // 
+            btnGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btnGenerate.Location = new Point(141, 149);
             btnGenerate.Name = "btnGenerate";
             btnGenerate.Size = new Size(128, 51);
@@ -126,6 +129,7 @@
             // 
             // cmbGrid
             // 
+            cmbGrid.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             cmbGrid.FormattingEnabled = true;
             cmbGrid.Items.AddRange(new object[] { "0.25", "0.5", "1" });
             cmbGrid.Location = new Point(118, 106);
@@ -144,6 +148,7 @@
             // 
             // numHeight
             // 
+            numHeight.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             numHeight.Location = new Point(118, 67);
             numHeight.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numHeight.Name = "numHeight";
@@ -153,6 +158,7 @@
             // 
             // numWidth
             // 
+            numWidth.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             numWidth.Location = new Point(118, 32);
             numWidth.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numWidth.Name = "numWidth";
@@ -199,18 +205,9 @@
             lstSpecialTools.TabIndex = 1;
             lstSpecialTools.SelectedIndexChanged += lstSpecialTools_SelectedIndexChanged;
             // 
-            // lstTools
-            // 
-            lstTools.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            lstTools.FormattingEnabled = true;
-            lstTools.Location = new Point(6, 26);
-            lstTools.Name = "lstTools";
-            lstTools.Size = new Size(276, 304);
-            lstTools.TabIndex = 0;
-            lstTools.SelectedIndexChanged += lstTools_SelectedIndexChanged;
-            // 
             // groupBox2
             // 
+            groupBox2.Controls.Add(btnSave);
             groupBox2.Controls.Add(btnExport);
             groupBox2.Dock = DockStyle.Fill;
             groupBox2.Location = new Point(3, 671);
@@ -219,6 +216,17 @@
             groupBox2.TabIndex = 2;
             groupBox2.TabStop = false;
             groupBox2.Text = "Műveletek";
+            // 
+            // btnSave
+            // 
+            btnSave.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnSave.Location = new Point(6, 24);
+            btnSave.Name = "btnSave";
+            btnSave.Size = new Size(128, 51);
+            btnSave.TabIndex = 8;
+            btnSave.Text = "Mentés és Vizualizálás";
+            btnSave.UseVisualStyleBackColor = true;
+            btnSave.Click += btnSave_Click;
             // 
             // btnExport
             // 
@@ -231,6 +239,37 @@
             btnExport.UseVisualStyleBackColor = true;
             btnExport.Click += btnExport_Click;
             // 
+            // groupBox3
+            // 
+            groupBox3.Controls.Add(tbFilter);
+            groupBox3.Controls.Add(lstTools);
+            groupBox3.Dock = DockStyle.Fill;
+            groupBox3.Location = new Point(3, 331);
+            groupBox3.Name = "groupBox3";
+            groupBox3.Size = new Size(288, 334);
+            groupBox3.TabIndex = 3;
+            groupBox3.TabStop = false;
+            groupBox3.Text = "Eszközlista";
+            // 
+            // tbFilter
+            // 
+            tbFilter.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            tbFilter.Location = new Point(9, 26);
+            tbFilter.Name = "tbFilter";
+            tbFilter.Size = new Size(273, 27);
+            tbFilter.TabIndex = 1;
+            tbFilter.TextChanged += tbFilter_TextChanged;
+            // 
+            // lstTools
+            // 
+            lstTools.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            lstTools.FormattingEnabled = true;
+            lstTools.Location = new Point(6, 66);
+            lstTools.Name = "lstTools";
+            lstTools.Size = new Size(276, 264);
+            lstTools.TabIndex = 0;
+            lstTools.SelectedIndexChanged += lstTools_SelectedIndexChanged;
+            // 
             // canvasPanel
             // 
             canvasPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -242,17 +281,6 @@
             canvasPanel.TabIndex = 0;
             canvasPanel.Paint += canvasPanel_Paint;
             canvasPanel.MouseClick += canvasPanel_MouseClick;
-            // 
-            // groupBox3
-            // 
-            groupBox3.Controls.Add(lstTools);
-            groupBox3.Dock = DockStyle.Fill;
-            groupBox3.Location = new Point(3, 331);
-            groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(288, 334);
-            groupBox3.TabIndex = 3;
-            groupBox3.TabStop = false;
-            groupBox3.Text = "Eszközlista";
             // 
             // Form1
             // 
@@ -275,6 +303,7 @@
             groupBox1.ResumeLayout(false);
             groupBox2.ResumeLayout(false);
             groupBox3.ResumeLayout(false);
+            groupBox3.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -298,5 +327,7 @@
         private SaveFileDialog saveFileDialog1;
         private ListBox lstSpecialTools;
         private GroupBox groupBox3;
+        private Button btnSave;
+        private TextBox tbFilter;
     }
 }
