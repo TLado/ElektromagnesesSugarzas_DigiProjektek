@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             splitContainer1 = new SplitContainer();
             tableLayoutPanel1 = new TableLayoutPanel();
             RoomSettings = new GroupBox();
@@ -48,6 +49,7 @@
             lstTools = new ListBox();
             canvasPanel = new Panel();
             saveFileDialog1 = new SaveFileDialog();
+            btnImport = new Button();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -101,6 +103,7 @@
             // 
             // RoomSettings
             // 
+            RoomSettings.Controls.Add(btnImport);
             RoomSettings.Controls.Add(btnGenerate);
             RoomSettings.Controls.Add(cmbGrid);
             RoomSettings.Controls.Add(label3);
@@ -119,7 +122,7 @@
             // btnGenerate
             // 
             btnGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnGenerate.Location = new Point(141, 149);
+            btnGenerate.Location = new Point(154, 154);
             btnGenerate.Name = "btnGenerate";
             btnGenerate.Size = new Size(128, 51);
             btnGenerate.TabIndex = 6;
@@ -282,12 +285,26 @@
             canvasPanel.Paint += canvasPanel_Paint;
             canvasPanel.MouseClick += canvasPanel_MouseClick;
             // 
+            // btnImport
+            // 
+            btnImport.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnImport.Location = new Point(6, 154);
+            btnImport.Name = "btnImport";
+            btnImport.Size = new Size(128, 51);
+            btnImport.TabIndex = 9;
+            btnImport.Text = "Szoba importálása";
+            btnImport.UseVisualStyleBackColor = true;
+            btnImport.Click += btnImport_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1263, 758);
             Controls.Add(splitContainer1);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            MaximizeBox = false;
             Name = "Form1";
             Text = "EML Predictor - Room Layout editor";
             Load += Form1_Load;
@@ -329,5 +346,6 @@
         private GroupBox groupBox3;
         private Button btnSave;
         private TextBox tbFilter;
+        private Button btnImport;
     }
 }

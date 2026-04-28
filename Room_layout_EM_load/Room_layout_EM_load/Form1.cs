@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Diagnostics;
 
 namespace Room_layout_EM_load
 {
@@ -17,12 +17,10 @@ namespace Room_layout_EM_load
         private List<DeviceInfo> filteredDevices = new List<DeviceInfo>();
 
         private int cellSizePx = 25;
-
         private double gridSizeM = 0.5;
 
         private int innerWidthCells;
         private int innerHeightCells;
-
         private int totalWidthCells;
         private int totalHeightCells;
 
@@ -31,7 +29,6 @@ namespace Room_layout_EM_load
         private Dictionary<string, string> specialToolMapping = new Dictionary<string, string>()
         {
             { "Fal", "wall" },
-            { "Személy", "person" },
             { "Radír", "erase" }
         };
 
@@ -41,19 +38,20 @@ namespace Room_layout_EM_load
             this.MinimumSize = new Size(1280, 805);
         }
 
+        private string GetResourcesFolder()
+        {
+            return Path.Combine(Application.StartupPath, "Resources");
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             cmbGrid.SelectedIndex = 1; // 0.5
 
-            string csvPath = Path.Combine(Application.StartupPath, "magnetic_data.csv");
+            string csvPath = Path.Combine(GetResourcesFolder(), "cleaned_magnetic_data.csv");
             devices = LoadDevicesFromCsv(csvPath);
-
             filteredDevices = new List<DeviceInfo>(devices);
 
-            lstTools.DataSource = null;
-            lstTools.DisplayMember = "EszkozNeve";
-            lstTools.ValueMember = "Id";
-            lstTools.DataSource = filteredDevices;
+            BindDeviceList(filteredDevices);
 
             lstSpecialTools.DataSource = null;
             lstSpecialTools.DisplayMember = "Key";
@@ -61,9 +59,7 @@ namespace Room_layout_EM_load
             lstSpecialTools.DataSource = new BindingSource(specialToolMapping, null);
 
             if (lstTools.Items.Count > 0)
-            {
                 lstTools.SelectedIndex = 0;
-            }
         }
 
         private List<DeviceInfo> LoadDevicesFromCsv(string filePath)
@@ -72,14 +68,11 @@ namespace Room_layout_EM_load
 
             if (!File.Exists(filePath))
             {
-                MessageBox.Show("A magnetic_data.csv fájl nem található:\n" + filePath);
+                MessageBox.Show("A cleaned_magnetic_data.csv fájl nem található:\n" + filePath);
                 return result;
             }
 
             string[] lines = File.ReadAllLines(filePath, Encoding.UTF8);
-
-            if (lines.Length <= 1)
-                return result;
 
             for (int i = 1; i < lines.Length; i++)
             {
@@ -113,6 +106,14 @@ namespace Room_layout_EM_load
             return result;
         }
 
+        private void BindDeviceList(List<DeviceInfo> source)
+        {
+            lstTools.DataSource = null;
+            lstTools.DisplayMember = "EszkozNeve";
+            lstTools.ValueMember = "Id";
+            lstTools.DataSource = source;
+        }
+
         private void CreateRoom(int innerWidthCells, int innerHeightCells)
         {
             this.innerWidthCells = innerWidthCells;
@@ -130,9 +131,7 @@ namespace Room_layout_EM_load
                     grid[x, y] = new GridCell();
 
                     if (x == 0 || y == 0 || x == totalWidthCells - 1 || y == totalHeightCells - 1)
-                    {
                         grid[x, y].IsWall = true;
-                    }
                 }
             }
 
@@ -152,6 +151,43 @@ namespace Room_layout_EM_load
             }
 
             gridSizeM = double.Parse(cmbGrid.SelectedItem.ToString(), CultureInfo.InvariantCulture);
+
+            double maxWidthM;
+            double maxHeightM;
+
+            if (gridSizeM == 0.25)
+            {
+                maxWidthM = 8;
+                maxHeightM = 6;
+            }
+            else if (gridSizeM == 0.5)
+            {
+                maxWidthM = 16;
+                maxHeightM = 12;
+            }
+            else if (gridSizeM == 1)
+            {
+                maxWidthM = 34;
+                maxHeightM = 26;
+            }
+            else
+            {
+                MessageBox.Show("Ismeretlen grid méret.");
+                return;
+            }
+
+            if (widthM > maxWidthM)
+            {
+                widthM = maxWidthM;
+                numWidth.Value = (decimal)maxWidthM;
+            }
+
+            if (heightM > maxHeightM)
+            {
+                heightM = maxHeightM;
+                numHeight.Value = (decimal)maxHeightM;
+            }
+
 
             int innerWidth = (int)Math.Round(widthM / gridSizeM);
             int innerHeight = (int)Math.Round(heightM / gridSizeM);
@@ -182,65 +218,97 @@ namespace Room_layout_EM_load
 
             try
             {
-                int personCounter = 1;
-
-                using (StreamWriter sw = new StreamWriter(saveFileDialog1.FileName, false, Encoding.UTF8))
-                {
-                    sw.WriteLine("x;y;x_m;y_m;cell_size_m;is_wall;device_id");
-
-                    for (int x = 0; x < totalWidthCells; x++)
-                    {
-                        for (int y = 0; y < totalHeightCells; y++)
-                        {
-                            GridCell cell = grid[x, y];
-
-                            double xM = x * gridSizeM;
-                            double yM = y * gridSizeM;
-
-                            if (cell.IsWall)
-                            {
-                                sw.WriteLine(
-                                    $"{x};{y};" +
-                                    $"{xM.ToString(CultureInfo.InvariantCulture)};" +
-                                    $"{yM.ToString(CultureInfo.InvariantCulture)};" +
-                                    $"{gridSizeM.ToString(CultureInfo.InvariantCulture)};" +
-                                    $"1;wall");
-                                continue;
-                            }
-
-                            if (cell.Items.Count == 0)
-                                continue;
-
-                            foreach (string item in cell.Items)
-                            {
-                                string exportId;
-
-                                if (item == "person")
-                                {
-                                    exportId = $"p{personCounter:D3}";
-                                    personCounter++;
-                                }
-                                else
-                                {
-                                    exportId = item;
-                                }
-
-                                sw.WriteLine(
-                                    $"{x};{y};" +
-                                    $"{xM.ToString(CultureInfo.InvariantCulture)};" +
-                                    $"{yM.ToString(CultureInfo.InvariantCulture)};" +
-                                    $"{gridSizeM.ToString(CultureInfo.InvariantCulture)};" +
-                                    $"0;{exportId}");
-                            }
-                        }
-                    }
-                }
-
+                SaveCsvToPath(saveFileDialog1.FileName);
                 MessageBox.Show("CSV export kész.");
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Hiba export közben: " + ex.Message);
+            }
+        }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            if (grid == null)
+            {
+                MessageBox.Show("Először hozz létre egy szobát.");
+                return;
+            }
+
+            try
+            {
+                string resourcesFolder = GetResourcesFolder();
+                Directory.CreateDirectory(resourcesFolder);
+
+                string csvPath = Path.Combine(resourcesFolder, "room_layout.csv");
+                string heatmapExePath = Path.Combine(resourcesFolder, "heatmap.exe");
+
+                SaveCsvToPath(csvPath);
+
+                if (!File.Exists(heatmapExePath))
+                {
+                    MessageBox.Show("A heatmap.exe nem található:\n" + heatmapExePath);
+                    return;
+                }
+
+                ProcessStartInfo start = new ProcessStartInfo
+                {
+                    FileName = heatmapExePath,
+                    WorkingDirectory = resourcesFolder,
+                    UseShellExecute = true
+                };
+
+                Process.Start(start);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Hiba mentés vagy indítás közben: " + ex.Message);
+            }
+        }
+
+        private void SaveCsvToPath(string filePath)
+        {
+
+            using (StreamWriter sw = new StreamWriter(filePath, false, Encoding.UTF8))
+            {
+                sw.WriteLine("x;y;x_m;y_m;cell_size_m;is_wall;device_id");
+
+                for (int x = 0; x < totalWidthCells; x++)
+                {
+                    for (int y = 0; y < totalHeightCells; y++)
+                    {
+                        GridCell cell = grid[x, y];
+
+                        double xM = x * gridSizeM;
+                        double yM = y * gridSizeM;
+
+                        if (cell.IsWall)
+                        {
+                            sw.WriteLine(
+                                $"{x};{y};" +
+                                $"{xM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"{yM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"{gridSizeM.ToString(CultureInfo.InvariantCulture)};" +
+                                "1;wall");
+                            continue;
+                        }
+
+                        if (cell.Items.Count == 0)
+                            continue;
+
+                        foreach (string item in cell.Items)
+                        {
+                            string exportId = item;
+
+                            sw.WriteLine(
+                                $"{x};{y};" +
+                                $"{xM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"{yM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"{gridSizeM.ToString(CultureInfo.InvariantCulture)};" +
+                                $"0;{exportId}");
+                        }
+                    }
+                }
             }
         }
 
@@ -260,6 +328,29 @@ namespace Room_layout_EM_load
                 currentTool = selected.Value;
                 lstTools.ClearSelected();
             }
+        }
+
+        private void tbFilter_TextChanged(object sender, EventArgs e)
+        {
+            string filterText = tbFilter.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(filterText))
+            {
+                filteredDevices = new List<DeviceInfo>(devices);
+            }
+            else
+            {
+                filteredDevices = devices
+                    .Where(d =>
+                        d.EszkozNeve.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        d.Id.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
+                    .ToList();
+            }
+
+            BindDeviceList(filteredDevices);
+
+            if (lstTools.Items.Count > 0)
+                lstTools.SelectedIndex = 0;
         }
 
         private void canvasPanel_Paint(object sender, PaintEventArgs e)
@@ -299,20 +390,18 @@ namespace Room_layout_EM_load
                         int meterBlockX = (int)Math.Floor((innerX * gridSizeM) / 1.0);
                         int meterBlockY = (int)Math.Floor((innerY * gridSizeM) / 1.0);
 
-                        if ((meterBlockX + meterBlockY) % 2 == 0)
-                            fillColor = Color.White;
-                        else
-                            fillColor = Color.LightGray;
+                        fillColor = (meterBlockX + meterBlockY) % 2 == 0
+                            ? Color.White
+                            : Color.LightGray;
                     }
 
                     using (Brush brush = new SolidBrush(fillColor))
-                    {
                         g.FillRectangle(brush, rect);
-                    }
 
                     g.DrawRectangle(Pens.Black, rect);
 
                     string text = GetCellLabel(cell);
+
                     if (!string.IsNullOrEmpty(text))
                     {
                         TextRenderer.DrawText(
@@ -349,16 +438,11 @@ namespace Room_layout_EM_load
             else if (currentTool == "wall")
             {
                 if (cell.Items.Count == 0)
-                {
                     cell.IsWall = !cell.IsWall;
-                }
             }
             else
             {
-                if (cell.IsWall)
-                    return;
-
-                if (string.IsNullOrWhiteSpace(currentTool))
+                if (cell.IsWall || string.IsNullOrWhiteSpace(currentTool))
                     return;
 
                 if (cell.Items.Contains(currentTool))
@@ -372,9 +456,6 @@ namespace Room_layout_EM_load
 
         private Color GetItemColor(string item)
         {
-            if (item == "person")
-                return Color.Pink;
-
             return Color.LightBlue;
         }
 
@@ -390,212 +471,119 @@ namespace Room_layout_EM_load
 
             foreach (string itemId in cell.Items)
             {
-                if (itemId == "person")
+                DeviceInfo device = devices.FirstOrDefault(d => d.Id == itemId);
+
+                if (device != null)
                 {
-                    labels.Add("U");
+                    string name = device.EszkozNeve;
+                    labels.Add(name.Length <= 3 ? name.ToUpper() : name.Substring(0, 3).ToUpper());
                 }
                 else
                 {
-                    DeviceInfo device = devices.FirstOrDefault(d => d.Id == itemId);
-
-                    if (device != null)
-                    {
-                        string nev = device.EszkozNeve;
-
-                        if (nev.Length <= 3)
-                            labels.Add(nev.ToUpper());
-                        else
-                            labels.Add(nev.Substring(0, Math.Min(3, nev.Length)).ToUpper());
-                    }
-                    else
-                    {
-                        labels.Add(itemId.ToUpper());
-                    }
+                    labels.Add(itemId.ToUpper());
                 }
             }
 
             return string.Join(",", labels);
         }
 
-        private void tbFilter_TextChanged(object sender, EventArgs e)
+        private void btnImport_Click(object sender, EventArgs e)
         {
-            string filterText = tbFilter.Text.Trim();
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "CSV files (*.csv)|*.csv";
 
-            if (string.IsNullOrWhiteSpace(filterText))
-            {
-                filteredDevices = new List<DeviceInfo>(devices);
-            }
-            else
-            {
-                filteredDevices = devices
-                    .Where(d =>
-                        d.EszkozNeve.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                        d.Id.IndexOf(filterText, StringComparison.OrdinalIgnoreCase) >= 0)
-                    .ToList();
-            }
-
-            lstTools.DataSource = null;
-            lstTools.DisplayMember = "EszkozNeve";
-            lstTools.ValueMember = "Id";
-            lstTools.DataSource = filteredDevices;
-
-            if (lstTools.Items.Count > 0)
-            {
-                lstTools.SelectedIndex = 0;
-            }
-        }
-
-        private void btnSave_Click(object sender, EventArgs e)
-        {
-            if (grid == null)
-            {
-                MessageBox.Show("Először hozz létre egy szobát.");
+            if (ofd.ShowDialog() != DialogResult.OK)
                 return;
-            }
 
             try
             {
-                string targetFolder = GetTargetFolder();
-                string csvPath = Path.Combine(targetFolder, "room_layout.csv");
-
-                SaveCsvToPath(csvPath);
-
-                RunPythonScript(targetFolder);
-
-                MessageBox.Show("CSV elmentve ide:\n" + csvPath);
+                ImportFromCsv(ofd.FileName);
+                canvasPanel.Invalidate();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Hiba mentés közben: " + ex.Message);
+                MessageBox.Show("Hibás fájl:\n" + ex.Message);
             }
         }
-        private string GetTargetFolder()
+
+        private void ImportFromCsv(string filePath)
         {
-            DirectoryInfo dir = new DirectoryInfo(Application.StartupPath);
+            var lines = File.ReadAllLines(filePath);
 
-            while (dir != null)
+            if (lines.Length < 2)
+                throw new Exception("Üres vagy hibás CSV.");
+
+            // fejléc ellenőrzés
+            string header = lines[0].Trim().ToLower();
+            if (!header.Contains("x;y;x_m;y_m;cell_size_m;is_wall;device_id"))
+                throw new Exception("Hibás CSV fejléc.");
+
+            List<(int x, int y, double size, int isWall, string id)> data =
+                new List<(int, int, double, int, string)>();
+
+            foreach (var line in lines.Skip(1))
             {
-                var slnFiles = dir.GetFiles("*.sln");
-                if (slnFiles.Length > 0)
-                {
-                    if (dir.Parent != null)
-                        return dir.Parent.FullName;
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
 
-                    return dir.FullName;
-                }
+                var parts = line.Split(';');
 
-                dir = dir.Parent;
+                if (parts.Length < 7)
+                    throw new Exception("Hibás sor a CSV-ben.");
+
+                int x = int.Parse(parts[0]);
+                int y = int.Parse(parts[1]);
+                double size = double.Parse(parts[4], CultureInfo.InvariantCulture);
+                int isWall = int.Parse(parts[5]);
+                string id = parts[6];
+
+                data.Add((x, y, size, isWall, id));
             }
 
-            return Application.StartupPath;
-        }
+            if (data.Count == 0)
+                throw new Exception("Nincs adat a CSV-ben.");
 
-        private void RunPythonScript(string targetFolder)
-        {
-            string scriptPath = Path.Combine(targetFolder, "main.py");
+            // grid méret
+            gridSizeM = data.First().size;
 
-            if (!File.Exists(scriptPath))
+            // UI sync
+            cmbGrid.SelectedItem = gridSizeM.ToString(CultureInfo.InvariantCulture);
+
+            int maxX = data.Max(d => d.x);
+            int maxY = data.Max(d => d.y);
+
+            // mivel van fal körben → -2
+            int innerWidth = maxX - 1;
+            int innerHeight = maxY - 1;
+
+            CreateRoom(innerWidth, innerHeight);
+
+            // reset
+            for (int x = 0; x < totalWidthCells; x++)
             {
-                MessageBox.Show("A main.py nem található itt:\n" + scriptPath);
-                return;
-            }
-
-            try
-            {
-                ProcessStartInfo start = new ProcessStartInfo();
-                start.FileName = "python";
-                start.Arguments = $"\"{scriptPath}\"";
-                start.WorkingDirectory = targetFolder;
-                start.UseShellExecute = false;
-                start.RedirectStandardOutput = true;
-                start.RedirectStandardError = true;
-                start.CreateNoWindow = true;
-
-                using (Process process = Process.Start(start))
+                for (int y = 0; y < totalHeightCells; y++)
                 {
-                    if (process == null)
-                    {
-                        MessageBox.Show("Nem sikerült elindítani a Python folyamatot.");
-                        return;
-                    }
-
-                    string output = process.StandardOutput.ReadToEnd();
-                    string error = process.StandardError.ReadToEnd();
-
-                    process.WaitForExit();
-
-                    if (process.ExitCode != 0)
-                    {
-                        MessageBox.Show("A Python script hibával leállt:\n\n" + error);
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrWhiteSpace(output))
-                        {
-                            MessageBox.Show("A Python script lefutott:\n\n" + output);
-                        }
-                    }
+                    grid[x, y].IsWall = false;
+                    grid[x, y].Items.Clear();
                 }
             }
-            catch (Exception ex)
+
+            // visszatöltés
+            foreach (var item in data)
             {
-                MessageBox.Show("Hiba a Python script indítása közben:\n" + ex.Message);
-            }
-        }
+                if (item.x >= totalWidthCells || item.y >= totalHeightCells)
+                    continue;
 
-        private void SaveCsvToPath(string filePath)
-        {
-            int personCounter = 1;
+                var cell = grid[item.x, item.y];
 
-            using (StreamWriter sw = new StreamWriter(filePath, false, Encoding.UTF8))
-            {
-                sw.WriteLine("x;y;x_m;y_m;cell_size_m;is_wall;device_id");
-
-                for (int x = 0; x < totalWidthCells; x++)
+                if (item.isWall == 1)
                 {
-                    for (int y = 0; y < totalHeightCells; y++)
-                    {
-                        GridCell cell = grid[x, y];
-
-                        double xM = x * gridSizeM;
-                        double yM = y * gridSizeM;
-
-                        if (cell.IsWall)
-                        {
-                            sw.WriteLine(
-                                $"{x};{y};" +
-                                $"{xM.ToString(CultureInfo.InvariantCulture)};" +
-                                $"{yM.ToString(CultureInfo.InvariantCulture)};" +
-                                $"{gridSizeM.ToString(CultureInfo.InvariantCulture)};" +
-                                $"1;wall");
-                            continue;
-                        }
-
-                        if (cell.Items.Count == 0)
-                            continue;
-
-                        foreach (string item in cell.Items)
-                        {
-                            string exportId;
-
-                            if (item == "person")
-                            {
-                                exportId = $"p{personCounter:D3}";
-                                personCounter++;
-                            }
-                            else
-                            {
-                                exportId = item;
-                            }
-
-                            sw.WriteLine(
-                                $"{x};{y};" +
-                                $"{xM.ToString(CultureInfo.InvariantCulture)};" +
-                                $"{yM.ToString(CultureInfo.InvariantCulture)};" +
-                                $"{gridSizeM.ToString(CultureInfo.InvariantCulture)};" +
-                                $"0;{exportId}");
-                        }
-                    }
+                    cell.IsWall = true;
+                }
+                else if (!string.IsNullOrWhiteSpace(item.id))
+                {
+                    if (!cell.Items.Contains(item.id))
+                        cell.Items.Add(item.id);
                 }
             }
         }
