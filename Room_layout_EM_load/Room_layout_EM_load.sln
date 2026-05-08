@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.12.35514.174 d17.12
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11723.231 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Room_layout_EM_load", "Room_layout_EM_load\Room_layout_EM_load.csproj", "{9908BFF8-AB44-414B-AA02-B97042F043F7}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "EMLPredictorSetup", "EMLPredictorSetup\EMLPredictorSetup.vdproj", "{DF170BF7-6585-70B2-E190-551B6F8743C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +17,13 @@ Global
 		{9908BFF8-AB44-414B-AA02-B97042F043F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9908BFF8-AB44-414B-AA02-B97042F043F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9908BFF8-AB44-414B-AA02-B97042F043F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF170BF7-6585-70B2-E190-551B6F8743C3}.Debug|Any CPU.ActiveCfg = Debug
+		{DF170BF7-6585-70B2-E190-551B6F8743C3}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {100F09B5-69B2-4D2F-8FB7-4D22FF48D483}
 	EndGlobalSection
 EndGlobal
