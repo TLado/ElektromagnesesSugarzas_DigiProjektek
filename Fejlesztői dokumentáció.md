@@ -4,13 +4,7 @@
 
 ➤ Fejlesztői dokumentáció
 
----
-  
- **Számítógépre klónozás:**  `git clone https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek.git`
-
----
-
- ## Tartalomjegyzék
+ # Tartalomjegyzék
   A **fejlesztői dokumentáció** három részre oszlik: a szobatervező és hőtérkép-generáló modul, valamint továbbfejlesztés esetén .py fájlból futtatható EXE áálomány készítésére.
 
 1. [Szobatervező modul](#szobatervezo-modul)
