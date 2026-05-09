@@ -4,6 +4,8 @@
 
 ➤ Fejlesztői dokumentáció
 
+----
+
  # Tartalomjegyzék
   A **fejlesztői dokumentáció** három részre oszlik: a szobatervező és hőtérkép-generáló modul, valamint továbbfejlesztés esetén .py fájlból futtatható EXE áálomány készítésére.
 
