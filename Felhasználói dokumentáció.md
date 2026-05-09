@@ -7,7 +7,7 @@
 ----
 
 # Tartalomjegyzék
-A felhasználói dokumentáció az alkalmazás használatára vonatkozik, az eredmények megértéséhez olvassa el a [README](https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek/blob/main/README.md) állományt.
+A **felhasználói dokumentáció** az alkalmazás használatára vonatkozik, az eredmények megértéséhez olvassa el a [README](https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek/blob/main/README.md) állományt.
 - [1. Telepítés és eltávolítás](#1-telepítés-és-eltávolítás)
   - [1.1. Telepítési lépések](#11-telepítési-lépések)
     - [1.1.1. Fontos telepítési megjegyzés](#111-fontos-telepítési-megjegyzés)
