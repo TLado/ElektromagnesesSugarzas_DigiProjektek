@@ -1,3 +1,7 @@
+➤ [Felhasználói dokumentáció](https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek/blob/main/Felhaszn%C3%A1l%C3%B3i%20dokument%C3%A1ci%C3%B3.md)
+
+➤ [Fejlesztői dokumentáció](https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek/blob/main/Fejleszt%C5%91i%20Dokument%C3%A1ci%C3%B3.md)
+
 # Elektromágneses Sugárzás Projekt a Digitális Projektek tárgyhoz
 
 Függőségek letöltése (command line-ban):
