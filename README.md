@@ -4,6 +4,12 @@
 
 ➤ [Fejlesztői dokumentáció](https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek/blob/main/Fejleszt%C5%91i%20dokument%C3%A1ci%C3%B3.md)
 
+----
+  
+ **Számítógépre klónozás:**  `git clone https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek.git`
+
+----
+
 # Elektromágneses Sugárzás Projekt a Digitális Projektek tárgyhoz
 
 Függőségek letöltése (command line-ban):
