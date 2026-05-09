@@ -16,7 +16,7 @@ pip install -r requirements.txt
 
 **Pár fontos infó**
 - Hz = Frekvencia, azt adja meg, milyen gyorsan rezeg a tér (milyen ütemben változik az iránya); ez minden elektromos eszköznél 50hz Európában, így ez állandó marad (Amerikában 60Hz)
-- muT = Azt adja meg, milyen erős a mágneses tér, milyen a fluxussűrűsége (a mu egy görög betű, csak ebben a karakterkódolásban nincs benne)
+- µT = Mikrotesla, azt adja meg, milyen erős a mágneses tér, milyen a fluxussűrűsége
 - Lakossági Maximum = lakossági helyeken ekkora fluxussűrűség fogadható el (azért alacsonyabb, mint a foglalkozási maximum, mivel itt akár a nap 24 órájában is tartózkodhatnak)
 - Foglalkozási Maximum = munkahelyen a maximális fluxussűrűség (ebben van az alacsony AL és a magas AL)
 - alacsony AL = ekkora fluxussűrűség esetén már intézkedni kell a munkavállaló védelmére, de még szabad benne dolgozni (AL egyébként Action Level)
