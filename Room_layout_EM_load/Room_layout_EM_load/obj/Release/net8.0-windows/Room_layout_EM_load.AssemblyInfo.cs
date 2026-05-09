@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Room_layout_EM_load")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+62d0eb8bd2aa97e95e8c910e594b5378e5c6ca5e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a1d4b88a153b3adb62039bcb32d81f37ca16b4f4")]
 [assembly: System.Reflection.AssemblyProductAttribute("Room_layout_EM_load")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Room_layout_EM_load")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
