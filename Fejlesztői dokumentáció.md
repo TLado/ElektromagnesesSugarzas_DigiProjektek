@@ -2,6 +2,8 @@
 
 ➤ [Felhasználói dokumentáció](https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek/blob/main/Felhaszn%C3%A1l%C3%B3i%20dokument%C3%A1ci%C3%B3.md)
 
+➤ Fejlesztői dokumentáció
+
 ---
   
  **Számítógépre klónozás:**  `git clone https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek.git`
