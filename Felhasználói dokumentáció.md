@@ -36,7 +36,7 @@ A **felhasználói dokumentáció** az alkalmazás használatára vonatkozik, az
 A program telepítője a GitHub repositoryban, az alábbi útvonalon található:
     [ElektromagnesesSugarzas_DigiProjektek/Room_layout_EM_load/EMLPredictorSetup/Release/EMLPredictorSetup.msi](https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek/blob/main/Room_layout_EM_load/EMLPredictorSetup/Release/EMLPredictorSetup.msi)
    
-   A telepítő varázsló a jobb felső sarokban a lefele mutató nyíl ⤓ ikonra tölthető le.
+   A telepítő varázsló a jobb felső sarokban a lefele mutató nyíl ⤓ ikonra kattintva tölthető le.
 
 <a id="11-telepítési-lépések"></a>
 ## 1.1. Telepítési lépések
