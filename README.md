@@ -96,4 +96,5 @@ Feladatai:
 ## Készítette:
 
 Ladomérszky Torda, Fekete Alex, Rutai Tamás, Jakab Gábor, Zátrok Balázs
+
 2026
