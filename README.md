@@ -6,6 +6,10 @@
 ➤ [Fejlesztői dokumentáció](https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek/blob/main/Fejleszt%C5%91i%20dokument%C3%A1ci%C3%B3.md)
 
 ----
+
+[Bemutató prezentáció](https://unicorvinus.sharepoint.com/:p:/t/CLOUD_Elektromgnesesprojekt/IQD6EvUhLOvIQa8kDGt-_rlVAVf-QP6NcxVhOdFX21F9GQ8?e=Zu8LgY)
+
+----
   
  **Számítógépre klónozás:**  `git clone https://github.com/TLado/ElektromagnesesSugarzas_DigiProjektek.git`
 Függőségek letöltése (parancssorban):
