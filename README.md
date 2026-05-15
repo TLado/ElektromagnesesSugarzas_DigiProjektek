@@ -27,12 +27,10 @@ Az **EML Predictor** a Budapesti Corvinus Egyetem Digitalizációs projektek tá
 - különböző szobaelrendezések összehasonlítása  
 - oktatási és demonstrációs célú szimuláció biztosítása  
 
----
 ## Az alkalmazás működése
 
 Az alkalmazás két különböző hőtérképet generál az elkészített szoba layout alapján. Az első egy részletes mágneses térerősség-hőtérkép, amely folytonos színátmenettel jeleníti meg a tér erősségét a szoba különböző pontjain. A második egy kategorizált hőtérkép, amely előre definiált határértékek alapján színezi a területeket, így gyorsan azonosíthatók a biztonságos, figyelmeztető vagy potenciálisan veszélyes zónák.
 
----  
 ## Számítás
 A mágneses térerősség számítása pontszerű sugárforrás-modellen alapul.  
 Minden elektromos eszköz egy mágneses teret kibocsátó forrásként kerül kezelésre, amelynek erőssége a távolság növekedésével csökken.
@@ -58,8 +56,6 @@ A rendszer sugárkövetés segítségével ellenőrzi, hogy az eszköz és a viz
 
 Az eredmény egy kétdimenziós mágneses térerősség-eloszlás, amely hőtérképként jeleníthető meg.
 
----
-
 ## Mértékegységek jelentése
 - Hz = Frekvencia, azt adja meg, milyen gyorsan rezeg a tér (milyen ütemben változik az iránya); ez minden elektromos eszköznél 50hz Európában, így ez állandó marad (Amerikában 60Hz)
 - µT = Mikrotesla, azt adja meg, milyen erős a mágneses tér, milyen a fluxussűrűsége
@@ -71,6 +67,8 @@ Az eredmény egy kétdimenziós mágneses térerősség-eloszlás, amely hőtér
 | 🟨 Sárga | 100–1000 µT | Lakossági határt átlépte | Lakosság vs. munkahely | Már meghaladja a lakossági limitet, de még jellemzően a foglalkozási határ alatt marad. |
 | 🟧 Narancs | 1000–6000 µT | Alacsony foglalkozási határ | Dolgozók | Olyan szint, amely tipikusan csak munkavállalóknak engedhető meg, munkavédelmi szabályok mellett. |
 | 🟥 Piros | 6000 µT felett | Magas foglalkozási határ | Dolgozók | Nagyon erős mező, csak speciális ipari környezetben, korlátozott ideig, ellenőrzött körülmények között elfogadható. |
+
+---
 
 ## Használt technológiák  
   
